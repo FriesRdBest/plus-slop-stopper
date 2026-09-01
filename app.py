@@ -1,18 +1,10 @@
 import streamlit as st
 import pandas as pd
 
-# 1. Page Configuration (SVG Plus Logo as favicon)
-PLUS_FAVICON_SVG = """
-<https://plusai.com/favicon.svg" viewBox="0 0 100 100">
-  <circle cx="50" cy="50" r="48" fill="#18186D"/>
-  <path d="M50 20 A30 30 0 0 1 80 50 A30 30 0 0 1 50 80 A30 30 0 0 1 20 50 A30 30 0 0 1 50 20 Z" fill="#FFFFFF"/>
-  <circle cx="50" cy="50" r="14" fill="#18186D"/>
-</svg>
-"""
-
+# 1. Page Configuration (Using Official Plus AI Favicon URL)
 st.set_page_config(
     page_title="Plus AI | Enterprise ROI and Deployment Simulator",
-    page_icon=PLUS_FAVICON_SVG,
+    page_icon="https://plusai.com/favicon.svg",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -293,7 +285,7 @@ with col4:
 
 st.divider()
 
-# Interactive Tabs (Zero Emojis, Standard Non-Hyphenated English)
+# Interactive Tabs
 tab1, tab2, tab3, tab4 = st.tabs([
     "Return on Investment and Capacity Modeling",
     "Thirty Sixty Ninety Day Deployment Playbook",
