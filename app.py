@@ -1,14 +1,101 @@
 import streamlit as st
 import pandas as pd
 
+# 1. Page Configuration (SVG Plus Logo as favicon)
+PLUS_FAVICON_SVG = """
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="48" fill="#18186D"/>
+  <path d="M50 20 A30 30 0 0 1 80 50 A30 30 0 0 1 50 80 A30 30 0 0 1 20 50 A30 30 0 0 1 50 20 Z" fill="#FFFFFF"/>
+  <circle cx="50" cy="50" r="14" fill="#18186D"/>
+</svg>
+"""
+
 st.set_page_config(
-    page_title="Plus AI | Enterprise ROI & Intake Simulator",
-    page_icon="✨",
+    page_title="Plus AI | Enterprise ROI and Deployment Simulator",
+    page_icon=PLUS_FAVICON_SVG,
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# Custom Styling for Plus AI Theme & Metric Wrap
+# 2. Comprehensive Operational Glossary Definition
+GLOSSARY_DATA = [
+    {
+        "Term": "Active Slide Creators",
+        "Context and Operational Meaning": "The total count of employees, consultants, sales representatives, or analysts within an organization who regularly build, format, and deliver presentations as part of their work."
+    },
+    {
+        "Term": "Annual Hours Reclaimed",
+        "Context and Operational Meaning": "The aggregate working hours returned to an organization over twelve months by eliminating manual slide formatting, alignment tasks, and repetitive layout adjustments."
+    },
+    {
+        "Term": "Annual Value Delivered",
+        "Context and Operational Meaning": "The bottom line financial capacity unlocked across the workforce, calculated as total annual hours reclaimed multiplied by the average fully loaded hourly rate."
+    },
+    {
+        "Term": "Brand Architecture Tier",
+        "Context and Operational Meaning": "The organizational complexity of a client design system, ranging from a single corporate identity to complex enterprise architectures with multiple subsidiary sub brands."
+    },
+    {
+        "Term": "Currency Selection",
+        "Context and Operational Meaning": "Standardizes financial capacity calculations across global client operations to model exact local currency savings."
+    },
+    {
+        "Term": "Deck Velocity",
+        "Context and Operational Meaning": "The total volume of completed slide presentations produced, reviewed, and finalized by an organization over a monthly operational cycle."
+    },
+    {
+        "Term": "Deployment Complexity Tier",
+        "Context and Operational Meaning": "The technical and operational effort required to integrate custom corporate branding, single sign on permissions, and template governance into enterprise workspaces."
+    },
+    {
+        "Term": "Design Tokens",
+        "Context and Operational Meaning": "Standardized, centralized data variables for colors, typography scales, spacing margins, and corner radii that enforce visual consistency across presentations programmatically."
+    },
+    {
+        "Term": "Fully Loaded Hourly Rate",
+        "Context and Operational Meaning": "The total real cost of a knowledge worker per hour, including gross salary, payroll taxes, health benefits, software licensing, and operational overhead."
+    },
+    {
+        "Term": "Layout Bounding Box",
+        "Context and Operational Meaning": "The predefined mathematical limits on a slide that restrict text and image containers from spilling over margins or colliding with adjacent graphical components."
+    },
+    {
+        "Term": "Linter",
+        "Context and Operational Meaning": "An automated programmatic scanner that evaluates text and slide layouts against strict design rules to catch overflow defects, awkward line wraps, and hierarchy violations before delivery."
+    },
+    {
+        "Term": "Manual Formatting Hours",
+        "Context and Operational Meaning": "The non strategic time a professional loses manually resizing shapes, fixing table alignments, wrestling text wrapping, and adjusting font sizes on a single presentation."
+    },
+    {
+        "Term": "Runtime Compatibility",
+        "Context and Operational Meaning": "The guarantee that an automated presentation renders with pixel perfect visual fidelity across both Google Slides and Microsoft PowerPoint without layout drift."
+    },
+    {
+        "Term": "Slide Slop",
+        "Context and Operational Meaning": "Unpolished, generic artificial intelligence presentation output characterized by broken layouts, awkward line wraps, clashing color pills, and inconsistent visual hierarchy."
+    },
+    {
+        "Term": "Template Ingestion",
+        "Context and Operational Meaning": "The operational process of importing master corporate presentation files, extracting style variables, and codifying layout rules into automated generation schemas."
+    },
+    {
+        "Term": "Thirty Sixty Ninety Day Roadmap",
+        "Context and Operational Meaning": "A phased enterprise deployment framework divided into thirty days of technical ingestion, sixty days of team activation, and ninety days of organization wide scale."
+    },
+    {
+        "Term": "Usage Telemetry",
+        "Context and Operational Meaning": "Aggregated, privacy compliant operational data that tracks template adoption frequency, slide generation volume, and active user engagement across departments."
+    }
+]
+
+df_glossary_master = pd.DataFrame(GLOSSARY_DATA).sort_values(by="Term").reset_index(drop=True)
+
+# Helper function to generate term with explanation tooltip
+def tooltip_span(term_name, definition_text):
+    return f'<span style="text-decoration: underline dotted; cursor: help; font-weight: 500;" title="{definition_text}">{term_name}</span>'
+
+# Custom CSS
 st.markdown("""
 <style>
     .main {
@@ -31,17 +118,26 @@ st.markdown("""
         color: #18186D;
         font-family: 'Inter', sans-serif;
     }
+    .custom-footer {
+        margin-top: 60px;
+        padding-top: 20px;
+        border-top: 1px solid #E2E8F0;
+        text-align: center;
+        color: #64748B;
+        font-size: 14px;
+        font-family: 'Inter', sans-serif;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # Header
-st.title("Plus AI: Enterprise ROI & Deployment Simulator")
-st.caption("A strategic decision tool for Enterprise GTM, ROI calculation, and 30-60-90 day deployment planning.")
+st.title("Plus AI: Enterprise Return on Investment and Deployment Simulator")
+st.caption("A strategic decision tool for Enterprise Go to Market strategy, financial modeling, and deployment planning.")
 st.divider()
 
-# Top Section: Control Center & Inputs (No Sidebar)
-with st.expander("⚙️ Configuration & Organization Parameters (Click to Expand / Collapse)", expanded=True):
-    st.markdown("### 1. Client Organization Parameters")
+# Top Section: Control Center & Inputs
+with st.expander("Configuration and Organization Parameters (Click to Expand or Collapse)", expanded=True):
+    st.markdown("### Client Organization Parameters")
     
     col_top1, col_top2, col_top3, col_top4 = st.columns(4)
     
@@ -91,12 +187,12 @@ with st.expander("⚙️ Configuration & Organization Parameters (Click to Expan
             max_value=10000,
             value=50,
             step=1,
-            help="Total knowledge workers, consultants, or sales reps actively creating or modifying slides."
+            help="Total knowledge workers, consultants, or sales reps actively creating or modifying presentations."
         )
         
     with col_top3:
         final_decks_per_month = st.number_input(
-            "Avg Decks Created / User / Month",
+            "Average Decks Created per User per Month",
             min_value=0.5,
             max_value=100.0,
             value=6.0,
@@ -107,13 +203,13 @@ with st.expander("⚙️ Configuration & Organization Parameters (Click to Expan
         
     with col_top4:
         final_hours_per_deck = st.number_input(
-            "Manual Hours Formatting / Deck",
+            "Manual Hours Spent Formatting per Deck",
             min_value=0.1,
             max_value=40.0,
             value=3.5,
             step=0.25,
             format="%.2f",
-            help="Average time a professional spends aligning text boxes, fixing margins, and manually styling slides."
+            help="Average time a professional spends aligning shapes, fixing margins, and manually styling slides."
         )
 
     st.markdown("---")
@@ -122,36 +218,36 @@ with st.expander("⚙️ Configuration & Organization Parameters (Click to Expan
     
     with col_sub1:
         hourly_rate = st.number_input(
-            f"Avg Knowledge Worker Hourly Rate ({curr})",
+            f"Average Knowledge Worker Hourly Rate ({curr})",
             min_value=1.00,
             max_value=2500.00,
             value=75.00,
             step=0.25,
             format="%.2f",
-            help="Fully-loaded hourly cost (salary + benefits) of professionals creating presentations."
+            help="Fully loaded hourly cost including salary and overhead of professionals creating presentations."
         )
         
     with col_sub2:
         brand_tier = st.selectbox(
-            "Brand & Template Architecture Tier",
+            "Brand and Template Architecture Tier",
             options=[
                 "Standard (Single Corporate Identity)",
-                "Multi-Brand (2-4 Sub-Brands & Business Units)",
-                "Global Enterprise (Complex Design System & Custom Tokens)"
+                "Multi Brand (Two to Four Sub Brands and Business Units)",
+                "Global Enterprise (Complex Design System and Custom Tokens)"
             ],
-            help="Defines the complexity of your design system: single template vs. multi-subsidiary tokenized schemas."
+            help="Defines organizational design complexity from single template schemas to multi unit corporate brands."
         )
 
 # Core Business Logic Calculations
 total_monthly_decks = final_team_size * final_decks_per_month
-hours_saved_per_deck = final_hours_per_deck * 0.65  # 65% efficiency gain using Plus AI
+hours_saved_per_deck = final_hours_per_deck * 0.65  # 65% efficiency gain
 monthly_hours_saved = total_monthly_decks * hours_saved_per_deck
 annual_hours_saved = monthly_hours_saved * 12
 annual_cost_savings = annual_hours_saved * hourly_rate
 
 st.markdown("### Executive Performance Impact Summary")
 
-# Display Key Metrics (Full Width Grid)
+# Display Key Metrics
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
@@ -180,12 +276,12 @@ with col4:
             delta="Fast Direct Access",
             help="Single brand template ingestion with standard workspace provisioning."
         )
-    elif "Multi-Brand" in brand_tier:
+    elif "Multi Brand" in brand_tier:
         st.metric(
             "Deployment Tier",
-            "Tier 2: Multi-Brand",
+            "Tier 2: Multi Brand",
             delta="Phased Rollout",
-            help="Multi-unit architecture supporting 2-4 distinct corporate sub-brands and token sets."
+            help="Multi unit architecture supporting distinct corporate sub brands and token sets."
         )
     else:
         st.metric(
@@ -197,14 +293,18 @@ with col4:
 
 st.divider()
 
-# Interactive Tabs
-tab1, tab2, tab3 = st.tabs(["📊 ROI & Capacity Modeling", "🚀 30-60-90 Deployment Playbook", "🛡️ Slide Slop Linter Demo"])
+# Interactive Tabs (Zero Emojis, Standard Non-Hyphenated English)
+tab1, tab2, tab3, tab4 = st.tabs([
+    "Return on Investment and Capacity Modeling",
+    "Thirty Sixty Ninety Day Deployment Playbook",
+    "Slide Slop Linter Demonstration",
+    "Glossary and Terminology Index"
+])
 
 with tab1:
-    st.subheader("Financial & Capacity Impact Analysis")
-    st.write("Modeling the cumulative capacity and time value across the organization:")
+    st.subheader("Financial and Capacity Impact Analysis")
+    st.write("Modeling the cumulative capacity and time value across the organization over twelve months:")
     
-    # Monthly Breakdown Table
     months = [f"Month {i}" for i in range(1, 13)]
     cumulative_hours = [monthly_hours_saved * i for i in range(1, 13)]
     cumulative_savings = [monthly_hours_saved * hourly_rate * i for i in range(1, 13)]
@@ -218,34 +318,42 @@ with tab1:
     st.dataframe(df_roi, use_container_width=True)
 
 with tab2:
-    st.subheader(f"Tailored 30-60-90 Day Deployment Roadmap: {brand_tier.split(' ')[0]}")
+    st.subheader(f"Tailored Thirty Sixty Ninety Day Deployment Roadmap: {brand_tier.split(' ')[0]}")
     
     c1, c2, c3 = st.columns(3)
     with c1:
-        st.markdown("### Days 1–30: Ingestion")
+        st.markdown("### Days One to Thirty: Ingestion")
         st.markdown("""
-        - Security, workspace provisioning & single sign-on configuration
-        - Brand asset & template token extraction
-        - Admin permissioning & initial pilot cohort activation
+        * Security, workspace provisioning and single sign on configuration
+        * Brand asset and template token extraction
+        * Admin permissioning and initial pilot cohort activation
         """)
     with c2:
-        st.markdown("### Days 31–60: Activation")
+        st.markdown("### Days Thirty One to Sixty: Activation")
         st.markdown("""
-        - Team onboarding sessions & workflow champion workshops
-        - Bi-weekly template usage telemetry & engagement tracking
-        - First 100 enterprise presentations generated in production
+        * Team onboarding sessions and workflow champion workshops
+        * Biweekly template usage telemetry and engagement tracking
+        * First one hundred enterprise presentations generated in production
         """)
     with c3:
-        st.markdown("### Days 61–90: Scale")
+        st.markdown("### Days Sixty One to Ninety: Scale")
         st.markdown("""
-        - Executive value review & operational time-savings audit
-        - Custom theme expansion across remaining business units
-        - Transition from pilot cohort to full organization-wide standard
+        * Executive value review and operational time savings audit
+        * Custom theme expansion across remaining business units
+        * Transition from pilot cohort to full organization wide standard
         """)
 
 with tab3:
-    st.subheader("Interactive 'Slide Slop' Linter Demonstration")
-    st.write("See how strict design token schemas prevent layout overflow and maintain formatting fidelity across Google Slides and PowerPoint:")
+    st.subheader("Interactive Slide Slop Linter Demonstration")
+    
+    linter_expl = "An automated programmatic scanner that evaluates text and slide layouts against strict design rules to catch overflow defects before delivery."
+    tokens_expl = "Standardized variables for colors, typography scales, and margins that enforce visual consistency across presentations."
+    runtime_expl = "The guarantee that an automated presentation renders with pixel perfect visual fidelity across both Google Slides and Microsoft PowerPoint."
+    
+    st.markdown(
+        f"See how an automated {tooltip_span('Linter', linter_expl)} enforcing strict {tooltip_span('Design Tokens', tokens_expl)} prevents layout overflow and guarantees {tooltip_span('Runtime Compatibility', runtime_expl)} across Google Slides and Microsoft PowerPoint:",
+        unsafe_allow_html=True
+    )
     
     sample_text = st.text_area(
         "Enter sample executive headline or body text to test layout container responsiveness:",
@@ -257,10 +365,37 @@ with tab3:
     
     col_linter1, col_linter2 = st.columns(2)
     with col_linter1:
-        st.markdown("**Without Plus Token Linting (AI Slop Anti-Pattern):**")
-        st.error(f"❌ Overflow Risk: Multi-line text ({char_count} chars) may wrap awkwardly over background graphics or force text scaling distortions.")
+        st.markdown("**Without Plus Token Linting (Artificial Intelligence Slop Anti Pattern):**")
+        st.error(f"Overflow Risk: Multi line text ({char_count} characters) may wrap awkwardly over background graphics or force text scaling distortions.")
     with col_linter2:
         st.markdown("**With Plus Structured Layout Engine:**")
-        st.success(f"✅ Safe Layout Schema: Content dynamically conforms to strict 16:9 bounding boxes, auto-padding, and hierarchy guardrails.")
+        st.success("Safe Layout Schema: Content dynamically conforms to strict sixteen by nine bounding boxes, auto padding, and hierarchy guardrails.")
 
-st.caption("Built by Robin Sylvester")
+with tab4:
+    st.subheader("Glossary and Operational Terminology Index")
+    st.write("Alphabetical reference directory of all technical, operational, and financial terms used across this application:")
+    
+    col_search, col_filter = st.columns([2, 1])
+    with col_search:
+        search_query = st.text_input("Search terms by keyword:", value="", placeholder="Type any word such as linter, token, telemetry, roi...")
+    with col_filter:
+        selected_term_dropdown = st.selectbox(
+            "Filter by specific term:",
+            options=["All Terms"] + list(df_glossary_master["Term"].values)
+        )
+    
+    # Filter Logic
+    df_filtered = df_glossary_master.copy()
+    if selected_term_dropdown != "All Terms":
+        df_filtered = df_filtered[df_filtered["Term"] == selected_term_dropdown]
+    elif search_query.strip():
+        q = search_query.strip().lower()
+        df_filtered = df_filtered[
+            df_filtered["Term"].str.lower().str.contains(q) | 
+            df_filtered["Context and Operational Meaning"].str.lower().str.contains(q)
+        ]
+    
+    st.dataframe(df_filtered, use_container_width=True, hide_index=True)
+
+# 3. Clean Dedicated Footer
+st.markdown('<div class="custom-footer">Built by Robin Sylvester</div>', unsafe_allow_html=True)
