@@ -48,7 +48,7 @@ team_size = st.sidebar.slider(
     min_value=1,
     max_value=2500,
     value=50,
-    step=1 if team_size_val := 1 else 5
+    step=1
 )
 
 decks_per_month = st.sidebar.slider(
