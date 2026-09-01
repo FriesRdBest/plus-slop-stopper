@@ -175,7 +175,7 @@ with st.expander("Configuration and Organization Parameters (Click to Expand or 
             "R ZAR - South African Rand",
             "$ TWD - New Taiwan Dollar",
             "฿ THB - Thai Baht",
-            "Rp IDR - Indonesian Ruiah",
+            "Rp IDR - Indonesian Rupiah",
             "RM MYR - Malaysian Ringgit",
             "₱ PHP - Philippine Peso",
             "₫ VND - Vietnamese Dong"
@@ -326,7 +326,7 @@ with tab1:
     st.dataframe(df_roi, use_container_width=True)
 
 with tab2:
-    st.subheader(f"Tailored 30. 60, 90 Day Deployment Roadmap: {brand_tier.split(' ')[0]}")
+    st.subheader(f"Tailored 30, 60, 90 Day Deployment Roadmap: {brand_tier.split(' ')[0]}")
     
     c1, c2, c3 = st.columns(3)
     with c1:
@@ -455,7 +455,22 @@ with tab4:
             df_filtered["Context and Operational Meaning"].str.lower().str.contains(q)
         ]
     
-    st.dataframe(df_filtered, use_container_width=True, hide_index=True)
+    # Streamlit Column Configuration for autosizing width and text wrapping by default
+    st.dataframe(
+        df_filtered,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "Term": st.column_config.TextColumn(
+                "Term",
+                width="small"
+            ),
+            "Context and Operational Meaning": st.column_config.TextColumn(
+                "Context and Operational Meaning",
+                width="large"
+            )
+        }
+    )
 
 # 3. Clean Dedicated Footer
 st.markdown('<div class="custom-footer">Built by Robin Sylvester</div>', unsafe_allow_html=True)
