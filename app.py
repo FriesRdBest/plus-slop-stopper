@@ -3,7 +3,7 @@ import pandas as pd
 
 # 1. Page Configuration (SVG Plus Logo as favicon)
 PLUS_FAVICON_SVG = """
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<https://plusai.com/favicon.svg" viewBox="0 0 100 100">
   <circle cx="50" cy="50" r="48" fill="#18186D"/>
   <path d="M50 20 A30 30 0 0 1 80 50 A30 30 0 0 1 50 80 A30 30 0 0 1 20 50 A30 30 0 0 1 50 20 Z" fill="#FFFFFF"/>
   <circle cx="50" cy="50" r="14" fill="#18186D"/>
