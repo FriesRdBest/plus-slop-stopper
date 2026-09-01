@@ -72,7 +72,7 @@ GLOSSARY_DATA = [
         "Context and Operational Meaning": "The operational process of importing master corporate presentation files, extracting style variables, and codifying layout rules into automated generation schemas."
     },
     {
-        "Term": "30, 60,90 Day Roadmap",
+        "Term": "30, 60, 90 Day Roadmap",
         "Context and Operational Meaning": "A phased enterprise deployment framework divided into thirty days of technical ingestion, sixty days of team activation, and ninety days of organization wide scale."
     },
     {
@@ -119,6 +119,22 @@ st.markdown("""
         font-size: 14px;
         font-family: 'Inter', sans-serif;
     }
+    .slide-canvas-broken {
+        background-color: #FFF5F5;
+        border: 2px dashed #E53E3E;
+        border-radius: 8px;
+        padding: 24px;
+        min-height: 240px;
+        position: relative;
+        overflow: hidden;
+    }
+    .slide-canvas-clean {
+        background-color: #F8FAFC;
+        border: 2px solid #18186D;
+        border-radius: 8px;
+        padding: 24px;
+        min-height: 240px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -159,7 +175,7 @@ with st.expander("Configuration and Organization Parameters (Click to Expand or 
             "R ZAR - South African Rand",
             "$ TWD - New Taiwan Dollar",
             "฿ THB - Thai Baht",
-            "Rp IDR - Indonesian Rupiah",
+            "Rp IDR - Indonesian Ruiah",
             "RM MYR - Malaysian Ringgit",
             "₱ PHP - Philippine Peso",
             "₫ VND - Vietnamese Dong"
@@ -310,7 +326,7 @@ with tab1:
     st.dataframe(df_roi, use_container_width=True)
 
 with tab2:
-    st.subheader(f"Tailored 30, 60, 90 Day Deployment Roadmap: {brand_tier.split(' ')[0]}")
+    st.subheader(f"Tailored 30. 60, 90 Day Deployment Roadmap: {brand_tier.split(' ')[0]}")
     
     c1, c2, c3 = st.columns(3)
     with c1:
@@ -348,20 +364,72 @@ with tab3:
     )
     
     sample_text = st.text_area(
-        "Enter sample executive headline or body text to test layout container responsiveness:",
-        value="Accelerating Enterprise Revenue Velocity Across Global Distributed Teams",
-        help="Type or paste sample slide text to test container responsiveness against layout rules."
+        "Type or paste any presentation headline or paragraph below (press Ctrl+Enter or click outside the box to run the simulation):",
+        value="Accelerating Enterprise Revenue Velocity Across Global Distributed Teams and Unifying Cross Functional Execution",
+        help="Edit or add long text to see how the layout engine dynamically enforces slide margins and font hierarchy."
     )
     
     char_count = len(sample_text)
+    word_count = len(sample_text.split())
+    
+    st.markdown(f"**Real-Time Text Telemetry:** `{char_count}` Characters | `{word_count}` Words")
     
     col_linter1, col_linter2 = st.columns(2)
+    
     with col_linter1:
-        st.markdown("**Without Plus Token Linting (Artificial Intelligence Slop Anti Pattern):**")
-        st.error(f"Overflow Risk: Multi line text ({char_count} characters) may wrap awkwardly over background graphics or force text scaling distortions.")
+        st.markdown("### Without Plus Token Linting")
+        st.caption("Common Artificial Intelligence Slide Slop Anti Pattern")
+        
+        # Simulated Broken Slide Card
+        if char_count > 60:
+            overflow_warning = "Layout Alert: Text exceeds safe 60-character container threshold. Font will shrink awkwardly or spill over slide borders."
+        else:
+            overflow_warning = "Layout Risk: Static container lacks responsive padding rules."
+            
+        st.markdown(f"""
+        <div class="slide-canvas-broken">
+            <div style="font-size: 11px; color: #E53E3E; font-weight: bold; text-transform: uppercase; margin-bottom: 8px;">
+                Unstructured AI Generation
+            </div>
+            <div style="font-family: serif; font-style: italic; font-size: 26px; color: #111111; line-height: 1.1; margin-bottom: 12px;">
+                {sample_text}
+            </div>
+            <div style="position: absolute; bottom: 12px; right: 12px; background: #FED7D7; color: #9B2C2C; padding: 4px 8px; border-radius: 4px; font-size: 11px;">
+                Layout Bounding Box Broken
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        st.error(overflow_warning)
+        
     with col_linter2:
-        st.markdown("**With Plus Structured Layout Engine:**")
-        st.success("Safe Layout Schema: Content dynamically conforms to strict sixteen by nine bounding boxes, auto padding, and hierarchy guardrails.")
+        st.markdown("### With Plus Structured Layout Engine")
+        st.caption("Standardized Design Token and Bounding Box Governance")
+        
+        # Adaptive font sizing calculation based on token schema
+        if char_count > 100:
+            dynamic_font_size = "18px"
+            dynamic_badge = "Auto Scaled to Subhead Schema (Tier 3)"
+        elif char_count > 50:
+            dynamic_font_size = "22px"
+            dynamic_badge = "Auto Balanced 2-Line Hierarchy (Tier 2)"
+        else:
+            dynamic_font_size = "26px"
+            dynamic_badge = "Standard Headline Schema (Tier 1)"
+            
+        st.markdown(f"""
+        <div class="slide-canvas-clean">
+            <div style="font-size: 11px; color: #18186D; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">
+                Plus AI Standardized Design System
+            </div>
+            <div style="font-family: sans-serif; font-weight: bold; font-size: {dynamic_font_size}; color: #18186D; line-height: 1.3; margin-bottom: 12px;">
+                {sample_text}
+            </div>
+            <div style="display: inline-block; background: #E6EAEE; color: #18186D; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500;">
+                {dynamic_badge}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        st.success(f"Clean Execution: Dynamic container adapted font size to {dynamic_font_size} with strict 16:9 safe margins.")
 
 with tab4:
     st.subheader("Glossary and Operational Terminology Index")
