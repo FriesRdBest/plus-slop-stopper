@@ -34,45 +34,78 @@ st.divider()
 # Sidebar: Inputs
 st.sidebar.header("1. Client Organization Parameters")
 
-# Currency selector
-currency_symbol = st.sidebar.selectbox(
-    "Currency",
-    options=["$ (USD / CAD / AUD)", "€ (EUR)", "£ (GBP)", "¥ (JPY)", "₹ (INR)"],
-    index=0
-)
-curr = currency_symbol.split(" ")[0]
+# Comprehensive 25+ Global Currencies
+currency_options = [
+    "$ USD - US Dollar",
+    "$ CAD - Canadian Dollar",
+    "$ AUD - Australian Dollar",
+    "€ EUR - Euro",
+    "£ GBP - British Pound",
+    "¥ JPY - Japanese Yen",
+    "₹ INR - Indian Rupee",
+    "$ SGD - Singapore Dollar",
+    "$ HKD - Hong Kong Dollar",
+    "CHF - Swiss Franc",
+    "$ NZD - New Zealand Dollar",
+    "kr SEK - Swedish Krona",
+    "kr NOK - Norwegian Krone",
+    "kr DKK - Danish Krone",
+    "₩ KRW - South Korean Won",
+    "R$ BRL - Brazilian Real",
+    "$ MXN - Mexican Peso",
+    "AED - UAE Dirham",
+    "SAR - Saudi Riyal",
+    "zł PLN - Polish Zloty",
+    "TL TRY - Turkish Lira",
+    "R ZAR - South African Rand",
+    "$ TWD - New Taiwan Dollar",
+    "฿ THB - Thai Baht",
+    "Rp IDR - Indonesian Rupiah",
+    "RM MYR - Malaysian Ringgit",
+    "₱ PHP - Philippine Peso",
+    "₫ VND - Vietnamese Dong"
+]
 
-# Team size starting from 1 for individuals & boutique teams up to 2,500 enterprise seats
-team_size = st.sidebar.slider(
-    "Active Slide Creators / Team Seats",
-    min_value=1,
-    max_value=2500,
-    value=50,
-    step=1
-)
+selected_currency_full = st.sidebar.selectbox("Currency Selection", options=currency_options, index=0)
+curr = selected_currency_full.split(" ")[0]
 
-decks_per_month = st.sidebar.slider(
-    "Average Decks Created per User / Month",
-    min_value=1,
-    max_value=30,
-    value=6,
-    step=1
-)
+# Slider + Exact Number Input for Team Size
+st.sidebar.markdown("**Active Slide Creators / Team Seats**")
+c_team1, c_team2 = st.sidebar.columns([2, 1])
+with c_team2:
+    team_size_input = st.number_input("Seats Input", min_value=1, max_value=10000, value=50, step=1, label_visibility="collapsed")
+with c_team1:
+    team_size = st.slider("Seats Slider", min_value=1, max_value=2500, value=min(int(team_size_input), 2500), step=1, label_visibility="collapsed")
+final_team_size = team_size_input if team_size_input != 50 and team_size == 50 else team_size
 
-hours_per_deck = st.sidebar.slider(
-    "Current Manual Hours Spent Formatting per Deck",
-    min_value=0.5,
-    max_value=10.0,
-    value=3.5,
-    step=0.5
-)
+# Slider + Exact Number Input for Decks per Month
+st.sidebar.markdown("**Average Decks Created per User / Month**")
+c_deck1, c_deck2 = st.sidebar.columns([2, 1])
+with c_deck2:
+    decks_input = st.number_input("Decks Input", min_value=0.5, max_value=100.0, value=6.0, step=0.5, format="%.1f", label_visibility="collapsed")
+with c_deck1:
+    decks_slider = st.slider("Decks Slider", min_value=1.0, max_value=30.0, value=min(float(decks_input), 30.0), step=0.5, label_visibility="collapsed")
+final_decks_per_month = decks_input if decks_input != 6.0 and decks_slider == 6.0 else decks_slider
 
+# Slider + Exact Number Input for Hours Spent per Deck
+st.sidebar.markdown("**Current Manual Hours Spent Formatting per Deck**")
+c_hrs1, c_hrs2 = st.sidebar.columns([2, 1])
+with c_hrs2:
+    hours_input = st.number_input("Hours Input", min_value=0.1, max_value=40.0, value=3.5, step=0.25, format="%.2f", label_visibility="collapsed")
+with c_hrs1:
+    hours_slider = st.slider("Hours Slider", min_value=0.5, max_value=10.0, value=min(float(hours_input), 10.0), step=0.25, label_visibility="collapsed")
+final_hours_per_deck = hours_input if hours_input != 3.5 and hours_slider == 3.5 else hours_slider
+
+# Hourly Rate with Two Decimals
+st.sidebar.markdown(f"**Average Hourly Rate of Knowledge Worker ({curr})**")
 hourly_rate = st.sidebar.number_input(
-    f"Average Hourly Rate of Knowledge Worker ({curr})",
-    min_value=15,
-    max_value=500,
-    value=75,
-    step=5
+    "Hourly Rate",
+    min_value=1.00,
+    max_value=2500.00,
+    value=75.00,
+    step=0.25,
+    format="%.2f",
+    label_visibility="collapsed"
 )
 
 st.sidebar.divider()
@@ -87,8 +120,8 @@ brand_tier = st.sidebar.selectbox(
 )
 
 # Core Business Logic Calculations
-total_monthly_decks = team_size * decks_per_month
-hours_saved_per_deck = hours_per_deck * 0.65  # 65% efficiency gain using Plus AI
+total_monthly_decks = final_team_size * final_decks_per_month
+hours_saved_per_deck = final_hours_per_deck * 0.65  # 65% efficiency gain using Plus AI
 monthly_hours_saved = total_monthly_decks * hours_saved_per_deck
 annual_hours_saved = monthly_hours_saved * 12
 annual_cost_savings = annual_hours_saved * hourly_rate
@@ -97,11 +130,11 @@ annual_cost_savings = annual_hours_saved * hourly_rate
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    st.metric("Annual Hours Reclaimed", f"{int(annual_hours_saved):,} hrs")
+    st.metric("Annual Hours Reclaimed", f"{annual_hours_saved:,.1f} hrs")
 with col2:
-    st.metric("Annual Value Delivered", f"{curr}{int(annual_cost_savings):,}")
+    st.metric("Annual Value Delivered", f"{curr}{annual_cost_savings:,.2f}")
 with col3:
-    st.metric("Monthly Deck Velocity", f"{int(total_monthly_decks):,} decks")
+    st.metric("Monthly Deck Velocity", f"{total_monthly_decks:,.0f} decks")
 with col4:
     if "Standard" in brand_tier:
         st.metric("Deployment Complexity", "Standard (Tier 1)", delta="Immediate Access")
@@ -121,13 +154,13 @@ with tab1:
     
     # Monthly Breakdown Table
     months = [f"Month {i}" for i in range(1, 13)]
-    cumulative_hours = [int(monthly_hours_saved * i) for i in range(1, 13)]
-    cumulative_savings = [int(monthly_hours_saved * hourly_rate * i) for i in range(1, 13)]
+    cumulative_hours = [monthly_hours_saved * i for i in range(1, 13)]
+    cumulative_savings = [monthly_hours_saved * hourly_rate * i for i in range(1, 13)]
     
     df_roi = pd.DataFrame({
         "Timeline": months,
-        "Cumulative Hours Saved": cumulative_hours,
-        f"Cumulative Value ({curr})": [f"{curr}{val:,}" for val in cumulative_savings]
+        "Cumulative Hours Saved": [f"{hrs:,.1f}" for hrs in cumulative_hours],
+        f"Cumulative Value ({curr})": [f"{curr}{val:,.2f}" for val in cumulative_savings]
     })
     
     st.dataframe(df_roi, use_container_width=True)
