@@ -72,7 +72,7 @@ GLOSSARY_DATA = [
         "Context and Operational Meaning": "The operational process of importing master corporate presentation files, extracting style variables, and codifying layout rules into automated generation schemas."
     },
     {
-        "Term": "Thirty Sixty Ninety Day Roadmap",
+        "Term": "30, 60,90 Day Roadmap",
         "Context and Operational Meaning": "A phased enterprise deployment framework divided into thirty days of technical ingestion, sixty days of team activation, and ninety days of organization wide scale."
     },
     {
@@ -288,7 +288,7 @@ st.divider()
 # Interactive Tabs
 tab1, tab2, tab3, tab4 = st.tabs([
     "Return on Investment and Capacity Modeling",
-    "Thirty Sixty Ninety Day Deployment Playbook",
+    "30, 60, 90 Day Deployment Playbook",
     "Slide Slop Linter Demonstration",
     "Glossary and Terminology Index"
 ])
@@ -310,25 +310,25 @@ with tab1:
     st.dataframe(df_roi, use_container_width=True)
 
 with tab2:
-    st.subheader(f"Tailored Thirty Sixty Ninety Day Deployment Roadmap: {brand_tier.split(' ')[0]}")
+    st.subheader(f"Tailored 30, 60, 90 Day Deployment Roadmap: {brand_tier.split(' ')[0]}")
     
     c1, c2, c3 = st.columns(3)
     with c1:
-        st.markdown("### Days One to Thirty: Ingestion")
+        st.markdown("### Days 1 to 30: Ingestion")
         st.markdown("""
         * Security, workspace provisioning and single sign on configuration
         * Brand asset and template token extraction
         * Admin permissioning and initial pilot cohort activation
         """)
     with c2:
-        st.markdown("### Days Thirty One to Sixty: Activation")
+        st.markdown("### Days 31 to 60: Activation")
         st.markdown("""
         * Team onboarding sessions and workflow champion workshops
         * Biweekly template usage telemetry and engagement tracking
         * First one hundred enterprise presentations generated in production
         """)
     with c3:
-        st.markdown("### Days Sixty One to Ninety: Scale")
+        st.markdown("### Days 61 to 90: Scale")
         st.markdown("""
         * Executive value review and operational time savings audit
         * Custom theme expansion across remaining business units
