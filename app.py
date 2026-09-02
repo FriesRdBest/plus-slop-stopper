@@ -87,53 +87,75 @@ df_glossary_master = pd.DataFrame(GLOSSARY_DATA).sort_values(by="Term").reset_in
 def tooltip_span(term_name, definition_text):
     return f'<span style="text-decoration: underline dotted; cursor: help; font-weight: 500;" title="{definition_text}">{term_name}</span>'
 
-# Custom CSS
+# Responsive, Theme-Aware CSS (Supports Light Mode, Dark Mode, and Mobile)
 st.markdown("""
 <style>
-    .main {
-        background-color: #FFFFFF;
+    /* Metric styling using theme variables */
+    div[data-testid="stMetric"] {
+        background-color: var(--secondary-background-color) !important;
+        padding: 16px !important;
+        border-radius: 8px !important;
+        border: 1px solid rgba(128, 128, 128, 0.2) !important;
+        min-height: 120px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
     }
+    
+    div[data-testid="stMetricLabel"] p, 
+    div[data-testid="stMetricLabel"] span {
+        color: var(--text-color) !important;
+        opacity: 0.8 !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+    }
+    
     div[data-testid="stMetricValue"] > div {
+        color: var(--text-color) !important;
         font-size: 24px !important;
+        font-weight: 700 !important;
         white-space: normal !important;
         word-break: break-word !important;
         overflow-wrap: break-word !important;
     }
-    .stMetric {
-        background-color: #F8FAFC;
-        padding: 16px;
-        border-radius: 8px;
-        border: 1px solid #E2E8F0;
-        min-height: 125px;
-    }
-    h1, h2, h3 {
-        color: #18186D;
-        font-family: 'Inter', sans-serif;
-    }
+    
     .custom-footer {
-        margin-top: 60px;
+        margin-top: 50px;
         padding-top: 20px;
-        border-top: 1px solid #E2E8F0;
+        border-top: 1px solid rgba(128, 128, 128, 0.2);
         text-align: center;
-        color: #64748B;
+        opacity: 0.7;
         font-size: 14px;
         font-family: 'Inter', sans-serif;
     }
+    
     .slide-canvas-broken {
-        background-color: #FFF5F5;
-        border: 2px dashed #E53E3E;
+        background-color: rgba(239, 68, 68, 0.08);
+        border: 2px dashed #EF4444;
         border-radius: 8px;
-        padding: 24px;
-        min-height: 240px;
+        padding: 20px;
+        min-height: 220px;
         position: relative;
         overflow: hidden;
     }
+    
     .slide-canvas-clean {
-        background-color: #F8FAFC;
-        border: 2px solid #18186D;
+        background-color: var(--secondary-background-color);
+        border: 2px solid #3B82F6;
         border-radius: 8px;
-        padding: 24px;
-        min-height: 240px;
+        padding: 20px;
+        min-height: 220px;
+    }
+    
+    /* Mobile optimization */
+    @media (max-width: 768px) {
+        div[data-testid="stMetric"] {
+            margin-bottom: 12px !important;
+            min-height: 100px !important;
+        }
+        div[data-testid="stMetricValue"] > div {
+            font-size: 20px !important;
+        }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -380,7 +402,6 @@ with tab3:
         st.markdown("### Without Plus Token Linting")
         st.caption("Common Artificial Intelligence Slide Slop Anti Pattern")
         
-        # Simulated Broken Slide Card
         if char_count > 60:
             overflow_warning = "Layout Alert: Text exceeds safe 60-character container threshold. Font will shrink awkwardly or spill over slide borders."
         else:
@@ -388,13 +409,13 @@ with tab3:
             
         st.markdown(f"""
         <div class="slide-canvas-broken">
-            <div style="font-size: 11px; color: #E53E3E; font-weight: bold; text-transform: uppercase; margin-bottom: 8px;">
+            <div style="font-size: 11px; color: #EF4444; font-weight: bold; text-transform: uppercase; margin-bottom: 8px;">
                 Unstructured AI Generation
             </div>
-            <div style="font-family: serif; font-style: italic; font-size: 26px; color: #111111; line-height: 1.1; margin-bottom: 12px;">
+            <div style="font-family: serif; font-style: italic; font-size: 24px; color: #EF4444; line-height: 1.1; margin-bottom: 12px;">
                 {sample_text}
             </div>
-            <div style="position: absolute; bottom: 12px; right: 12px; background: #FED7D7; color: #9B2C2C; padding: 4px 8px; border-radius: 4px; font-size: 11px;">
+            <div style="position: absolute; bottom: 12px; right: 12px; background: rgba(239, 68, 68, 0.2); color: #EF4444; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">
                 Layout Bounding Box Broken
             </div>
         </div>
@@ -405,7 +426,6 @@ with tab3:
         st.markdown("### With Plus Structured Layout Engine")
         st.caption("Standardized Design Token and Bounding Box Governance")
         
-        # Adaptive font sizing calculation based on token schema
         if char_count > 100:
             dynamic_font_size = "18px"
             dynamic_badge = "Auto Scaled to Subhead Schema (Tier 3)"
@@ -418,13 +438,13 @@ with tab3:
             
         st.markdown(f"""
         <div class="slide-canvas-clean">
-            <div style="font-size: 11px; color: #18186D; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">
+            <div style="font-size: 11px; color: #3B82F6; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">
                 Plus AI Standardized Design System
             </div>
-            <div style="font-family: sans-serif; font-weight: bold; font-size: {dynamic_font_size}; color: #18186D; line-height: 1.3; margin-bottom: 12px;">
+            <div style="font-family: sans-serif; font-weight: bold; font-size: {dynamic_font_size}; line-height: 1.3; margin-bottom: 12px;">
                 {sample_text}
             </div>
-            <div style="display: inline-block; background: #E6EAEE; color: #18186D; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500;">
+            <div style="display: inline-block; background: rgba(59, 130, 246, 0.15); color: #3B82F6; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">
                 {dynamic_badge}
             </div>
         </div>
