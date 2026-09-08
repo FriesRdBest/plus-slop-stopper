@@ -251,7 +251,7 @@ with st.expander("Configuration and Organization Parameters (Click to Expand or 
             f"Average Knowledge Worker Hourly Rate ({curr})",
             min_value=1.00,
             max_value=2500.00,
-            value=75.00,
+            value=45.00,
             step=0.25,
             format="%.2f",
             help="Fully loaded hourly cost including salary and overhead of professionals creating presentations."
