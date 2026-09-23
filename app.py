@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import plotly.graph_objects as go
 
 st.set_page_config(
     page_title="Plus AI | Enterprise ROI & Deployment Simulator",
@@ -59,7 +60,7 @@ GLOSSARY_DATA = [
     },
     {
         "Term": "Runtime Compatibility",
-        "Context and Operational Meaning": "The guarantee that an automated presentation renders with pixel perfect visual fidelity across both Google Slides and Microsoft PowerPoint without layout drift.",
+        "Context and Operational Meaning": "The guarantee that an automated presentation renders with pixel-perfect visual fidelity across both Google Slides and Microsoft PowerPoint without layout drift.",
     },
     {
         "Term": "Slide Slop",
@@ -83,6 +84,43 @@ df_glossary_master = (
     pd.DataFrame(GLOSSARY_DATA).sort_values(by="Term").reset_index(drop=True)
 )
 
+CURRENCY_OPTIONS = [
+    "$ USD - US Dollar",
+    "$ CAD - Canadian Dollar",
+    "$ AUD - Australian Dollar",
+    "€ EUR - Euro",
+    "£ GBP - British Pound",
+    "¥ JPY - Japanese Yen",
+    "₹ INR - Indian Rupee",
+    "$ SGD - Singapore Dollar",
+    "$ HKD - Hong Kong Dollar",
+    "CHF - Swiss Franc",
+    "$ NZD - New Zealand Dollar",
+    "kr SEK - Swedish Krona",
+    "kr NOK - Norwegian Krone",
+    "kr DKK - Danish Krone",
+    "₩ KRW - South Korean Won",
+    "R$ BRL - Brazilian Real",
+    "$ MXN - Mexican Peso",
+    "AED - UAE Dirham",
+    "SAR - Saudi Riyal",
+    "zł PLN - Polish Zloty",
+    "TL TRY - Turkish Lira",
+    "R ZAR - South African Rand",
+    "$ TWD - New Taiwan Dollar",
+    "฿ THB - Thai Baht",
+    "Rp IDR - Indonesian Rupiah",
+    "RM MYR - Malaysian Ringgit",
+    "₱ PHP - Philippine Peso",
+    "₫ VND - Vietnamese Dong",
+]
+
+BRAND_TIER_OPTIONS = [
+    "Standard (Single Corporate Identity)",
+    "Multi Brand (Two to Four Sub Brands and Business Units)",
+    "Global Enterprise (Complex Design System and Custom Tokens)",
+]
+
 
 def tooltip_span(term_name, definition_text):
     return (
@@ -98,6 +136,22 @@ def get_deployment_details(brand_tier):
             "name": "Standard",
             "status": "Fast direct access",
             "description": "Single identity template system with a focused implementation path.",
+            "overview": "Launch a governed pilot quickly with one core template system, a focused creator cohort, and clear ownership.",
+            "phase_1": [
+                "Provision the core workspace and pilot cohort",
+                "Ingest the primary corporate template",
+                "Define administrator ownership and guardrails",
+            ],
+            "phase_2": [
+                "Activate priority creators through guided onboarding",
+                "Review usage telemetry and template adoption",
+                "Publish the first governed production templates",
+            ],
+            "phase_3": [
+                "Validate capacity gains with the executive sponsor",
+                "Expand the pilot across adjacent teams",
+                "Establish a repeatable operating cadence",
+            ],
         }
     if "Multi Brand" in brand_tier:
         return {
@@ -105,13 +159,120 @@ def get_deployment_details(brand_tier):
             "name": "Multi-brand",
             "status": "Phased rollout",
             "description": "Multiple business units coordinated through governed templates.",
+            "overview": "Coordinate distinct business-unit identities through phased template ingestion, shared governance, and structured rollout waves.",
+            "phase_1": [
+                "Map business units, templates, and brand owners",
+                "Prioritize high-volume presentation workflows",
+                "Create governance rules for shared token systems",
+            ],
+            "phase_2": [
+                "Onboard champions by business unit",
+                "Monitor adoption by template and user segment",
+                "Resolve brand exceptions through a shared review loop",
+            ],
+            "phase_3": [
+                "Scale approved templates to remaining teams",
+                "Formalize multi-brand governance reporting",
+                "Introduce value reviews by business unit",
+            ],
         }
     return {
         "tier": "Tier 3",
         "name": "Enterprise",
         "status": "Custom dedicated",
         "description": "Complex architecture, custom tokens, and advanced governance.",
+        "overview": "Establish a dedicated enterprise operating model for complex design systems, strict governance, and distributed global teams.",
+        "phase_1": [
+            "Complete architecture and security alignment",
+            "Codify custom design tokens and approval flows",
+            "Establish enterprise workspace and access governance",
+        ],
+        "phase_2": [
+            "Run controlled adoption waves with executive sponsors",
+            "Validate token compliance and linter exceptions",
+            "Integrate telemetry into operational governance reviews",
+        ],
+        "phase_3": [
+            "Scale governed generation across regions and units",
+            "Operationalize enterprise value and risk reporting",
+            "Expand the approved component and template ecosystem",
+        ],
     }
+
+
+def create_cumulative_chart(month_numbers, values, curr, chart_type):
+    if chart_type == "value":
+        line_color = "#3f9dbc"
+        fill_color = "rgba(63, 157, 188, 0.18)"
+        title = "Cumulative value delivered"
+        hover_label = f"{curr}%{{y:,.0f}}"
+        y_title = f"Value delivered ({curr})"
+    else:
+        line_color = "#4b9a88"
+        fill_color = "rgba(75, 154, 136, 0.18)"
+        title = "Cumulative capacity reclaimed"
+        hover_label = "%{y:,.0f} hours"
+        y_title = "Hours reclaimed"
+
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Scatter(
+            x=month_numbers,
+            y=values,
+            mode="lines+markers",
+            name=title,
+            line={"color": line_color, "width": 3},
+            marker={
+                "size": 7,
+                "color": "#f7fbfa",
+                "line": {"color": line_color, "width": 2},
+            },
+            fill="tozeroy",
+            fillcolor=fill_color,
+            hovertemplate=f"<b>Month %{{x}}</b><br>{hover_label}<extra></extra>",
+        )
+    )
+
+    fig.update_layout(
+        height=330,
+        margin={"l": 6, "r": 6, "t": 20, "b": 6},
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(255,255,255,0.18)",
+        font={
+            "family": "Inter, ui-sans-serif, system-ui, sans-serif",
+            "color": "#4d6570",
+            "size": 12,
+        },
+        hoverlabel={
+            "bgcolor": "#f5f9f8",
+            "bordercolor": "rgba(75, 111, 122, 0.22)",
+            "font": {"color": "#1f343e"},
+        },
+        showlegend=False,
+        xaxis={
+            "title": {"text": ""},
+            "tickmode": "array",
+            "tickvals": [1, 3, 6, 9, 12],
+            "ticktext": ["M1", "M3", "M6", "M9", "M12"],
+            "showgrid": False,
+            "zeroline": False,
+            "fixedrange": True,
+            "tickfont": {"color": "#71848c"},
+        },
+        yaxis={
+            "title": {
+                "text": y_title,
+                "font": {"color": "#71848c", "size": 11},
+            },
+            "showgrid": True,
+            "gridcolor": "rgba(75, 111, 122, 0.12)",
+            "zeroline": False,
+            "fixedrange": True,
+            "tickfont": {"color": "#71848c"},
+        },
+    )
+    return fig
 
 
 st.markdown(
@@ -119,12 +280,7 @@ st.markdown(
 <style>
     :root {
         --plus-bg: #dce7e7;
-        --plus-bg-deep: #c8d7d9;
         --plus-surface: rgba(247, 250, 249, 0.56);
-        --plus-surface-strong: rgba(249, 251, 251, 0.76);
-        --plus-surface-soft: rgba(255, 255, 255, 0.34);
-        --plus-border: rgba(61, 91, 101, 0.17);
-        --plus-border-strong: rgba(66, 124, 140, 0.28);
         --plus-text: #182b34;
         --plus-muted: #5a6f77;
         --plus-faint: #819198;
@@ -156,7 +312,7 @@ st.markdown(
         inset: 0;
         pointer-events: none;
         z-index: 0;
-        opacity: 0.22;
+        opacity: 0.20;
         background-image:
             linear-gradient(rgba(70, 103, 114, 0.08) 1px, transparent 1px),
             linear-gradient(90deg, rgba(70, 103, 114, 0.08) 1px, transparent 1px);
@@ -369,7 +525,8 @@ st.markdown(
     }
 
     .eyebrow,
-    .metric-label {
+    .metric-label,
+    .timeline-label {
         color: #5d7984;
         font-size: 0.67rem;
         font-weight: 800;
@@ -412,7 +569,8 @@ st.markdown(
         flex-wrap: wrap;
     }
 
-    .tag {
+    .tag,
+    .telemetry-chip {
         padding: 0.39rem 0.62rem;
         color: #46606b;
         background: rgba(255, 255, 255, 0.43);
@@ -536,7 +694,11 @@ st.markdown(
         font-weight: 720;
     }
 
-    .glass-panel {
+    .glass-panel,
+    .analytics-card,
+    .phase-card,
+    .knowledge-card,
+    .linter-summary {
         height: 100%;
         border: 1px solid rgba(255, 255, 255, 0.69);
         border-radius: var(--plus-radius);
@@ -591,7 +753,8 @@ st.markdown(
     div[data-testid="stSelectbox"] > label,
     div[data-testid="stNumberInput"] > label,
     div[data-testid="stTextInput"] > label,
-    div[data-testid="stTextArea"] > label {
+    div[data-testid="stTextArea"] > label,
+    div[data-testid="stRadio"] > label {
         color: #425a64 !important;
         font-size: 0.72rem !important;
         font-weight: 650 !important;
@@ -702,7 +865,8 @@ st.markdown(
         line-height: 1.43;
     }
 
-    .metric-status {
+    .metric-status,
+    .phase-status {
         display: inline-flex;
         align-items: center;
         width: fit-content;
@@ -726,7 +890,8 @@ st.markdown(
         color: #5969a7;
     }
 
-    .impact-narrative {
+    .impact-narrative,
+    .deployment-summary {
         margin-top: 1rem;
         padding: 1rem 1.05rem;
         border: 1px solid rgba(79, 112, 122, 0.13);
@@ -737,7 +902,8 @@ st.markdown(
         line-height: 1.6;
     }
 
-    .impact-narrative strong {
+    .impact-narrative strong,
+    .deployment-summary strong {
         color: #1f343e;
         font-weight: 700;
     }
@@ -754,6 +920,7 @@ st.markdown(
     div[data-testid="stTabs"] [data-baseweb="tab-list"] {
         gap: 0.35rem;
         border-bottom: 1px solid rgba(74, 107, 117, 0.17);
+        overflow-x: auto;
     }
 
     div[data-testid="stTabs"] [data-baseweb="tab"] {
@@ -762,7 +929,7 @@ st.markdown(
         color: #617781;
         font-size: 0.75rem;
         font-weight: 680;
-        white-space: normal;
+        white-space: nowrap;
     }
 
     div[data-testid="stTabs"] [aria-selected="true"] {
@@ -772,44 +939,6 @@ st.markdown(
     div[data-testid="stTabs"] [data-baseweb="tab-highlight"] {
         height: 2px;
         background: linear-gradient(90deg, var(--plus-blue), var(--plus-violet)) !important;
-    }
-
-    div[data-testid="stDataFrame"] {
-        border: 1px solid rgba(78, 111, 121, 0.15);
-        border-radius: 14px;
-        overflow: hidden;
-    }
-
-    div[data-testid="stDataFrame"] [role="grid"] {
-        background: rgba(255, 255, 255, 0.47) !important;
-    }
-
-    .slide-canvas-broken {
-        background: rgba(201, 96, 104, 0.08);
-        border: 1px dashed rgba(190, 76, 87, 0.72);
-        border-radius: 15px;
-        padding: 20px;
-        min-height: 220px;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .slide-canvas-clean {
-        background: rgba(239, 248, 248, 0.66);
-        border: 1px solid rgba(63, 157, 188, 0.60);
-        border-radius: 15px;
-        padding: 20px;
-        min-height: 220px;
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.74);
-    }
-
-    .custom-footer {
-        margin-top: 2.4rem;
-        padding-top: 1.35rem;
-        border-top: 1px solid rgba(74, 107, 117, 0.16);
-        color: #71868e;
-        text-align: center;
-        font-size: 0.72rem;
     }
 
     .tab-section-title {
@@ -824,6 +953,272 @@ st.markdown(
         margin: 0 0 1.1rem;
         color: #5b717a;
         font-size: 0.84rem;
+    }
+
+    .milestone-card {
+        height: 100%;
+        padding: 0.95rem 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.68);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.37);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.77);
+    }
+
+    .milestone-label {
+        color: #71848c;
+        font-size: 0.64rem;
+        font-weight: 800;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+    }
+
+    .milestone-value {
+        margin-top: 0.38rem;
+        color: #203842;
+        font-size: 1.45rem;
+        font-weight: 760;
+        letter-spacing: -0.04em;
+    }
+
+    .milestone-copy {
+        margin-top: 0.30rem;
+        color: #657981;
+        font-size: 0.70rem;
+        line-height: 1.35;
+    }
+
+    .analytics-card {
+        padding: 1.15rem 1.15rem 0.75rem;
+        margin-top: 0.85rem;
+    }
+
+    .analytics-card h3,
+    .knowledge-card h3 {
+        margin: 0;
+        color: #243a44;
+        font-size: 0.95rem;
+        font-weight: 730;
+        letter-spacing: -0.015em;
+    }
+
+    .analytics-card p,
+    .knowledge-card p {
+        margin: 0.30rem 0 0;
+        color: #647780;
+        font-size: 0.76rem;
+        line-height: 1.45;
+    }
+
+    .phase-track {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        margin: 1.05rem 0 0.9rem;
+    }
+
+    .phase-track-step {
+        display: flex;
+        align-items: center;
+        gap: 0.48rem;
+        color: #56727c;
+        font-size: 0.70rem;
+        font-weight: 720;
+        white-space: nowrap;
+    }
+
+    .phase-track-dot {
+        display: grid;
+        width: 23px;
+        height: 23px;
+        place-items: center;
+        border-radius: 50%;
+        color: #ffffff;
+        background: linear-gradient(135deg, #51aac7, #7883c5);
+        box-shadow: 0 5px 12px rgba(79, 137, 157, 0.18);
+        font-size: 0.66rem;
+        font-weight: 800;
+    }
+
+    .phase-track-line {
+        height: 1px;
+        flex: 1;
+        background: linear-gradient(90deg, rgba(63, 157, 188, 0.52), rgba(116, 130, 189, 0.35));
+    }
+
+    .phase-card {
+        position: relative;
+        overflow: hidden;
+        min-height: 260px;
+        padding: 1.15rem;
+    }
+
+    .phase-card::after {
+        content: "";
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        right: -80px;
+        top: -88px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(104, 181, 205, 0.18), rgba(104, 181, 205, 0) 70%);
+    }
+
+    .phase-card > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    .phase-number {
+        color: #527989;
+        font-size: 0.67rem;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+    }
+
+    .phase-card h3 {
+        margin: 0.45rem 0 0;
+        color: #203741;
+        font-size: 1.12rem;
+        font-weight: 750;
+        letter-spacing: -0.025em;
+    }
+
+    .phase-card p {
+        min-height: 38px;
+        margin: 0.48rem 0 0.72rem;
+        color: #60737c;
+        font-size: 0.75rem;
+        line-height: 1.45;
+    }
+
+    .phase-list {
+        display: grid;
+        gap: 0.48rem;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+    }
+
+    .phase-list li {
+        position: relative;
+        padding-left: 1.08rem;
+        color: #465e68;
+        font-size: 0.73rem;
+        line-height: 1.40;
+    }
+
+    .phase-list li::before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: #3d937f;
+        font-weight: 800;
+    }
+
+    .phase-status {
+        margin-top: 0.85rem;
+    }
+
+    .linter-summary {
+        padding: 1rem 1.1rem;
+        margin-bottom: 0.95rem;
+    }
+
+    .linter-summary-grid {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .telemetry-row {
+        display: flex;
+        gap: 0.48rem;
+        flex-wrap: wrap;
+    }
+
+    .telemetry-chip {
+        color: #48636d;
+        background: rgba(255, 255, 255, 0.46);
+    }
+
+    .telemetry-chip strong {
+        color: #203943;
+    }
+
+    .slide-card-title {
+        margin: 0 0 0.25rem;
+        color: #203741;
+        font-size: 1rem;
+        font-weight: 730;
+        letter-spacing: -0.02em;
+    }
+
+    .slide-card-caption {
+        margin-bottom: 0.70rem;
+        color: #6a7d85;
+        font-size: 0.74rem;
+    }
+
+    .slide-canvas-broken {
+        background:
+            linear-gradient(145deg, rgba(255, 246, 246, 0.74), rgba(247, 226, 228, 0.67)),
+            rgba(255, 255, 255, 0.42);
+        border: 1px dashed rgba(190, 76, 87, 0.72);
+        border-radius: 18px;
+        padding: 20px;
+        min-height: 235px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+    }
+
+    .slide-canvas-clean {
+        background:
+            linear-gradient(145deg, rgba(236, 249, 250, 0.80), rgba(227, 239, 250, 0.72)),
+            rgba(255, 255, 255, 0.48);
+        border: 1px solid rgba(63, 157, 188, 0.60);
+        border-radius: 18px;
+        padding: 20px;
+        min-height: 235px;
+        box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.82),
+            0 9px 20px rgba(58, 107, 124, 0.08);
+    }
+
+    .knowledge-card {
+        padding: 1.05rem 1.1rem;
+        margin-bottom: 0.9rem;
+    }
+
+    .knowledge-stat {
+        margin-top: 0.48rem;
+        color: #1f3a44;
+        font-size: 1.55rem;
+        font-weight: 760;
+        letter-spacing: -0.04em;
+    }
+
+    div[data-testid="stDataFrame"] {
+        border: 1px solid rgba(78, 111, 121, 0.15);
+        border-radius: 14px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.38);
+    }
+
+    div[data-testid="stDataFrame"] [role="grid"] {
+        background: rgba(255, 255, 255, 0.47) !important;
+    }
+
+    .custom-footer {
+        margin-top: 2.4rem;
+        padding-top: 1.35rem;
+        border-top: 1px solid rgba(74, 107, 117, 0.16);
+        color: #71868e;
+        text-align: center;
+        font-size: 0.72rem;
     }
 
     @media (max-width: 900px) {
@@ -848,6 +1243,14 @@ st.markdown(
         .hero-card,
         .value-card {
             min-height: auto;
+        }
+
+        .phase-track-line {
+            display: none;
+        }
+
+        .phase-track {
+            flex-wrap: wrap;
         }
     }
 
@@ -874,48 +1277,16 @@ st.markdown(
             align-items: flex-start;
             flex-direction: column;
         }
+
+        .phase-track {
+            align-items: flex-start;
+            flex-direction: column;
+        }
     }
 </style>
 """,
     unsafe_allow_html=True,
 )
-
-currency_options = [
-    "$ USD - US Dollar",
-    "$ CAD - Canadian Dollar",
-    "$ AUD - Australian Dollar",
-    "€ EUR - Euro",
-    "£ GBP - British Pound",
-    "¥ JPY - Japanese Yen",
-    "₹ INR - Indian Rupee",
-    "$ SGD - Singapore Dollar",
-    "$ HKD - Hong Kong Dollar",
-    "CHF - Swiss Franc",
-    "$ NZD - New Zealand Dollar",
-    "kr SEK - Swedish Krona",
-    "kr NOK - Norwegian Krone",
-    "kr DKK - Danish Krone",
-    "₩ KRW - South Korean Won",
-    "R$ BRL - Brazilian Real",
-    "$ MXN - Mexican Peso",
-    "AED - UAE Dirham",
-    "SAR - Saudi Riyal",
-    "zł PLN - Polish Zloty",
-    "TL TRY - Turkish Lira",
-    "R ZAR - South African Rand",
-    "$ TWD - New Taiwan Dollar",
-    "฿ THB - Thai Baht",
-    "Rp IDR - Indonesian Rupiah",
-    "RM MYR - Malaysian Ringgit",
-    "₱ PHP - Philippine Peso",
-    "₫ VND - Vietnamese Dong",
-]
-
-brand_tier_options = [
-    "Standard (Single Corporate Identity)",
-    "Multi Brand (Two to Four Sub Brands and Business Units)",
-    "Global Enterprise (Complex Design System and Custom Tokens)",
-]
 
 st.markdown('<div class="plus-shell">', unsafe_allow_html=True)
 
@@ -996,7 +1367,7 @@ with config_col_2:
     )
     selected_currency_full = st.selectbox(
         "Currency",
-        options=currency_options,
+        options=CURRENCY_OPTIONS,
         index=0,
         help="Select the operational currency to standardize financial return modeling across global teams.",
     )
@@ -1032,7 +1403,7 @@ with config_col_3:
     )
     brand_tier = st.selectbox(
         "Brand and template architecture tier",
-        options=brand_tier_options,
+        options=BRAND_TIER_OPTIONS,
         help="Defines organizational design complexity from single template schemas to multi-unit corporate brands.",
     )
     st.markdown("</div>", unsafe_allow_html=True)
@@ -1043,6 +1414,11 @@ monthly_hours_saved = total_monthly_decks * hours_saved_per_deck
 annual_hours_saved = monthly_hours_saved * 12
 annual_cost_savings = annual_hours_saved * hourly_rate
 deployment = get_deployment_details(brand_tier)
+
+month_numbers = list(range(1, 13))
+months = [f"Month {month}" for month in month_numbers]
+cumulative_hours = [monthly_hours_saved * month for month in month_numbers]
+cumulative_savings = [monthly_hours_saved * hourly_rate * month for month in month_numbers]
 
 with hero_placeholder.container():
     hero_left, hero_right = st.columns([1.42, 0.78], gap="large")
@@ -1169,90 +1545,200 @@ with tab1:
         unsafe_allow_html=True,
     )
     st.markdown(
-        '<div class="tab-section-copy">Modeling the cumulative capacity and time value across the organization over twelve months.</div>',
+        '<div class="tab-section-copy">Track how reclaimed presentation capacity becomes measurable enterprise value over the first twelve months.</div>',
         unsafe_allow_html=True,
     )
 
-    months = [f"Month {i}" for i in range(1, 13)]
-    cumulative_hours = [monthly_hours_saved * i for i in range(1, 13)]
-    cumulative_savings = [monthly_hours_saved * hourly_rate * i for i in range(1, 13)]
+    milestone_1, milestone_2, milestone_3 = st.columns(3, gap="medium")
 
-    df_roi = pd.DataFrame(
-        {
-            "Timeline": months,
-            "Cumulative Hours Saved": [f"{hrs:,.1f}" for hrs in cumulative_hours],
-            f"Cumulative Value ({curr})": [
-                f"{curr}{val:,.2f}" for val in cumulative_savings
-            ],
-        }
+    with milestone_1:
+        st.markdown(
+            f"""
+<div class="milestone-card">
+    <div class="milestone-label">Month 1 value</div>
+    <div class="milestone-value">{curr}{cumulative_savings[0]:,.0f}</div>
+    <div class="milestone-copy">{cumulative_hours[0]:,.0f} hours of reclaimed capacity.</div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+    with milestone_2:
+        st.markdown(
+            f"""
+<div class="milestone-card">
+    <div class="milestone-label">Month 6 value</div>
+    <div class="milestone-value">{curr}{cumulative_savings[5]:,.0f}</div>
+    <div class="milestone-copy">{cumulative_hours[5]:,.0f} cumulative hours reclaimed.</div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+    with milestone_3:
+        st.markdown(
+            f"""
+<div class="milestone-card">
+    <div class="milestone-label">Month 12 value</div>
+    <div class="milestone-value">{curr}{cumulative_savings[11]:,.0f}</div>
+    <div class="milestone-copy">{cumulative_hours[11]:,.0f} hours returned to the organization.</div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+    roi_view = st.radio(
+        "ROI analysis view",
+        options=["Financial value", "Capacity reclaimed", "Detailed monthly table"],
+        horizontal=True,
+        label_visibility="collapsed",
     )
 
-    st.dataframe(df_roi, use_container_width=True, hide_index=True)
+    if roi_view == "Financial value":
+        st.markdown(
+            """
+<div class="analytics-card">
+    <h3>Value ramp</h3>
+    <p>Cumulative estimated productivity value from the modeled reduction in manual deck formatting.</p>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+        st.plotly_chart(
+            create_cumulative_chart(month_numbers, cumulative_savings, curr, "value"),
+            use_container_width=True,
+            config={"displayModeBar": False, "responsive": True},
+        )
+
+    elif roi_view == "Capacity reclaimed":
+        st.markdown(
+            """
+<div class="analytics-card">
+    <h3>Capacity ramp</h3>
+    <p>Cumulative hours returned to creators for higher-value work, collaboration, and customer-facing preparation.</p>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+        st.plotly_chart(
+            create_cumulative_chart(month_numbers, cumulative_hours, curr, "hours"),
+            use_container_width=True,
+            config={"displayModeBar": False, "responsive": True},
+        )
+
+    else:
+        st.markdown(
+            """
+<div class="analytics-card">
+    <h3>Detailed monthly model</h3>
+    <p>Review the month-by-month cumulative capacity and value model behind the executive outcomes.</p>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+        df_roi = pd.DataFrame(
+            {
+                "Timeline": months,
+                "Cumulative Hours Saved": [f"{hours:,.1f}" for hours in cumulative_hours],
+                f"Cumulative Value ({curr})": [
+                    f"{curr}{value:,.2f}" for value in cumulative_savings
+                ],
+            }
+        )
+        st.dataframe(df_roi, use_container_width=True, hide_index=True)
 
 with tab2:
     st.markdown(
-        f'<div class="tab-section-title">Tailored 30 / 60 / 90-day deployment roadmap: {deployment["name"]}</div>',
+        f'<div class="tab-section-title">{deployment["tier"]} deployment journey: {deployment["name"]}</div>',
         unsafe_allow_html=True,
     )
     st.markdown(
-        '<div class="tab-section-copy">A practical implementation sequence aligned to the selected architecture tier.</div>',
+        '<div class="tab-section-copy">A practical operating sequence that adapts to the chosen brand and template architecture.</div>',
         unsafe_allow_html=True,
     )
 
-    c1, c2, c3 = st.columns(3)
+    st.markdown(
+        f"""
+<div class="deployment-summary">
+    <strong>{deployment["tier"]} / {deployment["name"]}</strong> — {deployment["overview"]}
+</div>
+""",
+        unsafe_allow_html=True,
+    )
 
-    with c1:
-        st.markdown("### Days 1 to 30: Ingestion")
+    st.markdown(
+        """
+<div class="phase-track">
+    <div class="phase-track-step"><span class="phase-track-dot">1</span>Days 1–30</div>
+    <div class="phase-track-line"></div>
+    <div class="phase-track-step"><span class="phase-track-dot">2</span>Days 31–60</div>
+    <div class="phase-track-line"></div>
+    <div class="phase-track-step"><span class="phase-track-dot">3</span>Days 61–90</div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+    phase_1, phase_2, phase_3 = st.columns(3, gap="medium")
+
+    with phase_1:
+        phase_1_items = "".join(f"<li>{item}</li>" for item in deployment["phase_1"])
         st.markdown(
-            """
-- Security, workspace provisioning, and single sign-on configuration
-- Brand asset and template token extraction
-- Admin permissioning and initial pilot cohort activation
-"""
+            f"""
+<div class="phase-card">
+    <div class="phase-number">Phase 01 / Foundation</div>
+    <h3>Ingestion</h3>
+    <p>Establish the operating environment, template foundation, and accountable launch scope.</p>
+    <ul class="phase-list">{phase_1_items}</ul>
+    <div class="phase-status">● Foundation established</div>
+</div>
+""",
+            unsafe_allow_html=True,
         )
 
-    with c2:
-        st.markdown("### Days 31 to 60: Activation")
+    with phase_2:
+        phase_2_items = "".join(f"<li>{item}</li>" for item in deployment["phase_2"])
         st.markdown(
-            """
-- Team onboarding sessions and workflow champion workshops
-- Biweekly template usage telemetry and engagement tracking
-- First one hundred enterprise presentations generated in production
-"""
+            f"""
+<div class="phase-card">
+    <div class="phase-number">Phase 02 / Adoption</div>
+    <h3>Activation</h3>
+    <p>Turn the approved system into a repeatable creator workflow with observable adoption.</p>
+    <ul class="phase-list">{phase_2_items}</ul>
+    <div class="phase-status">● Adoption in motion</div>
+</div>
+""",
+            unsafe_allow_html=True,
         )
 
-    with c3:
-        st.markdown("### Days 61 to 90: Scale")
+    with phase_3:
+        phase_3_items = "".join(f"<li>{item}</li>" for item in deployment["phase_3"])
         st.markdown(
-            """
-- Executive value review and operational time-savings audit
-- Custom theme expansion across remaining business units
-- Transition from pilot cohort to organization-wide standard
-"""
+            f"""
+<div class="phase-card">
+    <div class="phase-number">Phase 03 / Expansion</div>
+    <h3>Scale</h3>
+    <p>Convert early gains into durable governance, expanded reach, and executive value reporting.</p>
+    <ul class="phase-list">{phase_3_items}</ul>
+    <div class="phase-status">● Enterprise ready</div>
+</div>
+""",
+            unsafe_allow_html=True,
         )
 
 with tab3:
     st.markdown(
-        '<div class="tab-section-title">Interactive slide slop linter demonstration</div>',
+        '<div class="tab-section-title">Interactive slide slop linter</div>',
         unsafe_allow_html=True,
     )
     st.markdown(
-        '<div class="tab-section-copy">See how governed tokens and responsive layout rules protect presentation quality before delivery.</div>',
+        '<div class="tab-section-copy">Compare unstructured output with a governed Plus AI layout engine that protects hierarchy, margins, and readability.</div>',
         unsafe_allow_html=True,
     )
 
-    linter_expl = (
-        "An automated programmatic scanner that evaluates text and slide layouts "
-        "against strict design rules to catch overflow defects before delivery."
-    )
-    tokens_expl = (
-        "Standardized variables for colors, typography scales, and margins that "
-        "enforce visual consistency across presentations."
-    )
-    runtime_expl = (
-        "The guarantee that an automated presentation renders with pixel-perfect "
-        "visual fidelity across both Google Slides and Microsoft PowerPoint."
-    )
+    linter_expl = "An automated programmatic scanner that evaluates text and slide layouts against strict design rules to catch overflow defects before delivery."
+    tokens_expl = "Standardized variables for colors, typography scales, and margins that enforce visual consistency across presentations."
+    runtime_expl = "The guarantee that an automated presentation renders with pixel-perfect visual fidelity across both Google Slides and Microsoft PowerPoint."
 
     st.markdown(
         f"See how an automated {tooltip_span('Linter', linter_expl)} enforcing strict "
@@ -1262,43 +1748,69 @@ with tab3:
     )
 
     sample_text = st.text_area(
-        "Type or paste any presentation headline or paragraph below",
+        "Presentation text to evaluate",
         value="Accelerating Enterprise Revenue Velocity Across Global Distributed Teams and Unifying Cross Functional Execution",
         help="Edit or add long text to see how the layout engine dynamically enforces slide margins and font hierarchy.",
+        height=112,
     )
 
     char_count = len(sample_text)
     word_count = len(sample_text.split())
 
-    st.markdown(
-        f"**Real-time text telemetry:** `{char_count}` characters · `{word_count}` words"
+    if char_count > 100:
+        dynamic_font_size = "18px"
+        dynamic_badge = "Auto scaled to subhead schema (Tier 3)"
+        governance_status = "Complex copy safely adapted"
+    elif char_count > 50:
+        dynamic_font_size = "22px"
+        dynamic_badge = "Auto balanced 2-line hierarchy (Tier 2)"
+        governance_status = "Two-line hierarchy protected"
+    else:
+        dynamic_font_size = "26px"
+        dynamic_badge = "Standard headline schema (Tier 1)"
+        governance_status = "Headline schema protected"
+
+    overflow_warning = (
+        "High layout risk: text exceeds the safe 60-character container threshold."
+        if char_count > 60
+        else "Moderate layout risk: static output has no responsive padding or hierarchy rules."
     )
 
-    col_linter1, col_linter2 = st.columns(2)
+    st.markdown(
+        f"""
+<div class="linter-summary">
+    <div class="linter-summary-grid">
+        <div>
+            <div class="metric-label">Live layout telemetry</div>
+            <div style="margin-top:0.35rem; color:#4f6771; font-size:0.80rem;">The linter evaluates hierarchy and bounding-box fit as copy changes.</div>
+        </div>
+        <div class="telemetry-row">
+            <span class="telemetry-chip"><strong>{char_count}</strong> characters</span>
+            <span class="telemetry-chip"><strong>{word_count}</strong> words</span>
+            <span class="telemetry-chip"><strong>{governance_status}</strong></span>
+        </div>
+    </div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
 
-    with col_linter1:
-        st.markdown("### Without Plus token linting")
-        st.caption("Common artificial-intelligence slide slop anti-pattern")
+    col_linter_1, col_linter_2 = st.columns(2, gap="large")
 
-        if char_count > 60:
-            overflow_warning = (
-                "Layout alert: text exceeds the safe 60-character container threshold. "
-                "The font will shrink awkwardly or spill over slide borders."
-            )
-        else:
-            overflow_warning = "Layout risk: static container lacks responsive padding rules."
-
+    with col_linter_1:
+        st.markdown('<div class="slide-card-title">Unstructured generation</div>', unsafe_allow_html=True)
+        st.markdown('<div class="slide-card-caption">Common AI slide slop anti-pattern: static layout, uncontrolled copy, and no design governance.</div>', unsafe_allow_html=True)
         st.markdown(
             f"""
 <div class="slide-canvas-broken">
-    <div style="font-size:11px; color:#bd4c57; font-weight:800; text-transform:uppercase; margin-bottom:8px;">
-        Unstructured AI generation
+    <div style="font-size:11px; color:#bd4c57; font-weight:800; text-transform:uppercase; margin-bottom:10px; letter-spacing:0.08em;">
+        Layout risk detected
     </div>
-    <div style="font-family:serif; font-style:italic; font-size:24px; color:#b54e59; line-height:1.1; margin-bottom:12px;">
+    <div style="font-family:Georgia, serif; font-style:italic; font-size:24px; color:#b54e59; line-height:1.10; margin-bottom:14px;">
         {sample_text}
     </div>
-    <div style="position:absolute; bottom:12px; right:12px; background:rgba(201,96,104,0.16); color:#9d3d48; padding:4px 8px; border-radius:5px; font-size:11px; font-weight:700;">
-        Layout bounding box broken
+    <div style="position:absolute; bottom:14px; right:14px; background:rgba(201,96,104,0.16); color:#9d3d48; padding:5px 9px; border-radius:6px; font-size:11px; font-weight:700;">
+        Bounding box broken
     </div>
 </div>
 """,
@@ -1306,30 +1818,19 @@ with tab3:
         )
         st.error(overflow_warning)
 
-    with col_linter2:
-        st.markdown("### With Plus structured layout engine")
-        st.caption("Standardized design-token and bounding-box governance")
-
-        if char_count > 100:
-            dynamic_font_size = "18px"
-            dynamic_badge = "Auto scaled to subhead schema (Tier 3)"
-        elif char_count > 50:
-            dynamic_font_size = "22px"
-            dynamic_badge = "Auto balanced 2-line hierarchy (Tier 2)"
-        else:
-            dynamic_font_size = "26px"
-            dynamic_badge = "Standard headline schema (Tier 1)"
-
+    with col_linter_2:
+        st.markdown('<div class="slide-card-title">Plus governed layout engine</div>', unsafe_allow_html=True)
+        st.markdown('<div class="slide-card-caption">Structured design tokens, responsive hierarchy, and safe-margin enforcement before delivery.</div>', unsafe_allow_html=True)
         st.markdown(
             f"""
 <div class="slide-canvas-clean">
-    <div style="font-size:11px; color:#327e9a; font-weight:800; text-transform:uppercase; margin-bottom:8px; letter-spacing:0.5px;">
-        Plus AI standardized design system
+    <div style="font-size:11px; color:#327e9a; font-weight:800; text-transform:uppercase; margin-bottom:10px; letter-spacing:0.08em;">
+        Plus AI design system
     </div>
-    <div style="font-family:sans-serif; font-weight:700; font-size:{dynamic_font_size}; color:#203640; line-height:1.3; margin-bottom:12px;">
+    <div style="font-family:Inter, sans-serif; font-weight:740; font-size:{dynamic_font_size}; color:#203640; line-height:1.3; margin-bottom:14px;">
         {sample_text}
     </div>
-    <div style="display:inline-block; background:rgba(63,157,188,0.13); color:#286d88; padding:4px 8px; border-radius:5px; font-size:11px; font-weight:700;">
+    <div style="display:inline-block; background:rgba(63,157,188,0.13); color:#286d88; padding:5px 9px; border-radius:6px; font-size:11px; font-weight:700;">
         {dynamic_badge}
     </div>
 </div>
@@ -1337,7 +1838,7 @@ with tab3:
             unsafe_allow_html=True,
         )
         st.success(
-            f"Clean execution: dynamic container adapted font size to {dynamic_font_size} with strict 16:9 safe margins."
+            f"Clean execution: governed layout adapted typography to {dynamic_font_size} while preserving strict 16:9 safe margins."
         )
 
 with tab4:
@@ -1346,24 +1847,42 @@ with tab4:
         unsafe_allow_html=True,
     )
     st.markdown(
-        '<div class="tab-section-copy">An alphabetical reference directory of the financial, technical, and operational terms used in this workspace.</div>',
+        '<div class="tab-section-copy">A searchable reference of the financial, technical, and operational language used throughout this workspace.</div>',
         unsafe_allow_html=True,
     )
 
-    col_search, col_filter = st.columns([2, 1])
+    glossary_info, glossary_controls = st.columns([1, 2], gap="medium")
 
-    with col_search:
-        search_query = st.text_input(
-            "Search terms by keyword",
-            value="",
-            placeholder="Type a word such as linter, token, telemetry, or ROI...",
+    with glossary_info:
+        st.markdown(
+            f"""
+<div class="knowledge-card">
+    <div class="metric-label">Knowledge base</div>
+    <div class="knowledge-stat">{len(df_glossary_master)}</div>
+    <p>Operational definitions supporting ROI modeling, governed creation, deployment planning, and enterprise rollout.</p>
+</div>
+""",
+            unsafe_allow_html=True,
         )
 
-    with col_filter:
-        selected_term_dropdown = st.selectbox(
-            "Filter by specific term",
-            options=["All Terms"] + list(df_glossary_master["Term"].values),
-        )
+    with glossary_controls:
+        st.markdown('<div class="knowledge-card">', unsafe_allow_html=True)
+        col_search, col_filter = st.columns([2, 1])
+
+        with col_search:
+            search_query = st.text_input(
+                "Search terms by keyword",
+                value="",
+                placeholder="Type a word such as linter, token, telemetry, or ROI...",
+            )
+
+        with col_filter:
+            selected_term_dropdown = st.selectbox(
+                "Filter by specific term",
+                options=["All Terms"] + list(df_glossary_master["Term"].values),
+            )
+
+        st.markdown("</div>", unsafe_allow_html=True)
 
     df_filtered = df_glossary_master.copy()
 
@@ -1375,6 +1894,12 @@ with tab4:
             df_filtered["Term"].str.lower().str.contains(q)
             | df_filtered["Context and Operational Meaning"].str.lower().str.contains(q)
         ]
+
+    result_label = "term" if len(df_filtered) == 1 else "terms"
+    st.markdown(
+        f'<div class="section-kicker" style="display:inline-block; margin:0.2rem 0 0.65rem;">{len(df_filtered)} {result_label} shown</div>',
+        unsafe_allow_html=True,
+    )
 
     st.dataframe(
         df_filtered,
