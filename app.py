@@ -1288,8 +1288,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.markdown('<div class="plus-shell">', unsafe_allow_html=True)
-
 st.markdown(
     """
 <div class="topbar">
@@ -1919,4 +1917,3 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.markdown("</div>", unsafe_allow_html=True)
