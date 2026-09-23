@@ -1,6 +1,25 @@
-import streamlit as st
+from datetime import datetime
+from io import BytesIO
+from xml.sax.saxutils import escape
+
 import pandas as pd
 import plotly.graph_objects as go
+import streamlit as st
+from reportlab.lib import colors
+from reportlab.lib.colors import HexColor
+from reportlab.lib.enums import TA_LEFT, TA_RIGHT
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.units import inch
+from reportlab.platypus import (
+    HRFlowable,
+    KeepTogether,
+    Paragraph,
+    SimpleDocTemplate,
+    Spacer,
+    Table,
+    TableStyle,
+)
 
 st.set_page_config(
     page_title="Plus AI | Enterprise ROI & Deployment Simulator",
@@ -121,6 +140,45 @@ BRAND_TIER_OPTIONS = [
     "Global Enterprise (Complex Design System and Custom Tokens)",
 ]
 
+PRESETS = {
+    "Pilot": {
+        "team_size": 15,
+        "decks_per_month": 4.0,
+        "hours_per_deck": 2.0,
+        "hourly_rate": 45.0,
+        "currency": "$ USD - US Dollar",
+        "brand_tier": "Standard (Single Corporate Identity)",
+        "description": "A focused launch cohort validating value, workflow fit, and template governance.",
+    },
+    "Department rollout": {
+        "team_size": 75,
+        "decks_per_month": 6.0,
+        "hours_per_deck": 3.0,
+        "hourly_rate": 55.0,
+        "currency": "$ USD - US Dollar",
+        "brand_tier": "Multi Brand (Two to Four Sub Brands and Business Units)",
+        "description": "A department-level rollout across multiple teams, templates, and operating rhythms.",
+    },
+    "Enterprise rollout": {
+        "team_size": 500,
+        "decks_per_month": 8.0,
+        "hours_per_deck": 3.5,
+        "hourly_rate": 65.0,
+        "currency": "$ USD - US Dollar",
+        "brand_tier": "Global Enterprise (Complex Design System and Custom Tokens)",
+        "description": "A governed enterprise program with complex architecture and broad creator adoption.",
+    },
+}
+
+DEFAULT_SCENARIO = {
+    "team_size": 50,
+    "decks_per_month": 6.0,
+    "hours_per_deck": 3.5,
+    "hourly_rate": 45.0,
+    "currency": "$ USD - US Dollar",
+    "brand_tier": "Standard (Single Corporate Identity)",
+}
+
 
 def tooltip_span(term_name, definition_text):
     return (
@@ -200,6 +258,23 @@ def get_deployment_details(brand_tier):
     }
 
 
+def get_scenario_name(values):
+    for preset_name, preset in PRESETS.items():
+        if all(values[key] == preset[key] for key in DEFAULT_SCENARIO):
+            return preset_name
+    return "Custom scenario"
+
+
+def apply_preset(preset_name):
+    preset = PRESETS[preset_name]
+    st.session_state.team_size = preset["team_size"]
+    st.session_state.decks_per_month = preset["decks_per_month"]
+    st.session_state.hours_per_deck = preset["hours_per_deck"]
+    st.session_state.hourly_rate = preset["hourly_rate"]
+    st.session_state.currency = preset["currency"]
+    st.session_state.brand_tier = preset["brand_tier"]
+
+
 def create_cumulative_chart(month_numbers, values, curr, chart_type):
     if chart_type == "value":
         line_color = "#3f9dbc"
@@ -275,6 +350,323 @@ def create_cumulative_chart(month_numbers, values, curr, chart_type):
     return fig
 
 
+def pdf_paragraph(text, style):
+    return Paragraph(escape(str(text)).replace("\n", "<br/>"), style)
+
+
+def build_executive_summary_pdf(
+    client_name,
+    scenario_name,
+    curr,
+    team_size,
+    decks_per_month,
+    hours_per_deck,
+    hourly_rate,
+    total_monthly_decks,
+    annual_hours_saved,
+    annual_cost_savings,
+    cumulative_hours,
+    cumulative_savings,
+    deployment,
+):
+    output = BytesIO()
+    document = SimpleDocTemplate(
+        output,
+        pagesize=letter,
+        rightMargin=0.55 * inch,
+        leftMargin=0.55 * inch,
+        topMargin=0.45 * inch,
+        bottomMargin=0.45 * inch,
+        title="Plus AI Executive Value Summary",
+        author="Plus AI",
+    )
+
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        "ExecutiveTitle",
+        parent=styles["Title"],
+        fontName="Helvetica-Bold",
+        fontSize=21,
+        leading=24,
+        textColor=HexColor("#1d333d"),
+        spaceAfter=4,
+    )
+    subtitle_style = ParagraphStyle(
+        "ExecutiveSubtitle",
+        parent=styles["Normal"],
+        fontName="Helvetica",
+        fontSize=9,
+        leading=12,
+        textColor=HexColor("#607680"),
+        spaceAfter=12,
+    )
+    eyebrow_style = ParagraphStyle(
+        "Eyebrow",
+        parent=styles["Normal"],
+        fontName="Helvetica-Bold",
+        fontSize=7.5,
+        leading=10,
+        textColor=HexColor("#3f7f95"),
+        spaceAfter=4,
+    )
+    section_style = ParagraphStyle(
+        "Section",
+        parent=styles["Heading2"],
+        fontName="Helvetica-Bold",
+        fontSize=10,
+        leading=12,
+        textColor=HexColor("#203842"),
+        spaceBefore=8,
+        spaceAfter=6,
+    )
+    body_style = ParagraphStyle(
+        "Body",
+        parent=styles["BodyText"],
+        fontName="Helvetica",
+        fontSize=8.3,
+        leading=11,
+        textColor=HexColor("#48616b"),
+    )
+    metric_label_style = ParagraphStyle(
+        "MetricLabel",
+        parent=styles["Normal"],
+        fontName="Helvetica-Bold",
+        fontSize=6.8,
+        leading=9,
+        textColor=HexColor("#607680"),
+    )
+    metric_value_style = ParagraphStyle(
+        "MetricValue",
+        parent=styles["Normal"],
+        fontName="Helvetica-Bold",
+        fontSize=15,
+        leading=17,
+        textColor=HexColor("#1e3340"),
+    )
+    small_style = ParagraphStyle(
+        "Small",
+        parent=styles["Normal"],
+        fontName="Helvetica",
+        fontSize=7.2,
+        leading=9.5,
+        textColor=HexColor("#607680"),
+    )
+    right_small_style = ParagraphStyle(
+        "RightSmall",
+        parent=small_style,
+        alignment=TA_RIGHT,
+    )
+
+    display_client = client_name.strip() or "Current modeled scenario"
+    export_timestamp = datetime.now().strftime("%B %-d, %Y") if hasattr(datetime.now(), "strftime") else ""
+
+    story = [
+        pdf_paragraph("PLUS AI / ENTERPRISE DECISION INTELLIGENCE", eyebrow_style),
+        pdf_paragraph("Executive Value Summary", title_style),
+        pdf_paragraph(
+            f"{display_client} · {scenario_name} · Generated {export_timestamp}",
+            subtitle_style,
+        ),
+        HRFlowable(
+            width="100%",
+            thickness=1,
+            color=HexColor("#b7d7df"),
+            spaceAfter=10,
+        ),
+    ]
+
+    metric_data = [
+        [
+            pdf_paragraph("ANNUAL VALUE DELIVERED", metric_label_style),
+            pdf_paragraph("ANNUAL HOURS RECLAIMED", metric_label_style),
+            pdf_paragraph("MONTHLY DECK VELOCITY", metric_label_style),
+        ],
+        [
+            pdf_paragraph(f"{curr}{annual_cost_savings:,.0f}", metric_value_style),
+            pdf_paragraph(f"{annual_hours_saved:,.0f} hrs", metric_value_style),
+            pdf_paragraph(f"{total_monthly_decks:,.0f} decks", metric_value_style),
+        ],
+        [
+            pdf_paragraph("Estimated productivity capacity unlocked.", small_style),
+            pdf_paragraph("Capacity returned from manual formatting work.", small_style),
+            pdf_paragraph("Aggregate presentation output across active creators.", small_style),
+        ],
+    ]
+
+    metric_table = Table(
+        metric_data,
+        colWidths=[2.45 * inch, 2.45 * inch, 2.45 * inch],
+    )
+    metric_table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, -1), HexColor("#edf5f5")),
+                ("BOX", (0, 0), (-1, -1), 0.5, HexColor("#c4dce1")),
+                ("INNERGRID", (0, 0), (-1, -1), 0.35, HexColor("#d6e7e9")),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 11),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 11),
+                ("TOPPADDING", (0, 0), (-1, 0), 9),
+                ("TOPPADDING", (0, 1), (-1, 1), 3),
+                ("BOTTOMPADDING", (0, 1), (-1, 1), 3),
+                ("BOTTOMPADDING", (0, 2), (-1, 2), 9),
+            ]
+        )
+    )
+    story.append(metric_table)
+    story.append(Spacer(1, 10))
+
+    story.append(pdf_paragraph("Scenario assumptions", section_style))
+
+    assumptions_data = [
+        [
+            pdf_paragraph("Active slide creators", metric_label_style),
+            pdf_paragraph(f"{team_size:,}", body_style),
+            pdf_paragraph("Avg. decks / creator / month", metric_label_style),
+            pdf_paragraph(f"{decks_per_month:,.1f}", body_style),
+        ],
+        [
+            pdf_paragraph("Manual formatting hours / deck", metric_label_style),
+            pdf_paragraph(f"{hours_per_deck:,.2f} hrs", body_style),
+            pdf_paragraph("Average worker hourly rate", metric_label_style),
+            pdf_paragraph(f"{curr}{hourly_rate:,.2f}", body_style),
+        ],
+        [
+            pdf_paragraph("Deployment readiness", metric_label_style),
+            pdf_paragraph(f"{deployment['tier']}: {deployment['name']}", body_style),
+            pdf_paragraph("Rollout posture", metric_label_style),
+            pdf_paragraph(deployment["status"], body_style),
+        ],
+    ]
+
+    assumptions_table = Table(
+        assumptions_data,
+        colWidths=[1.85 * inch, 1.8 * inch, 1.85 * inch, 1.9 * inch],
+    )
+    assumptions_table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, -1), colors.white),
+                ("BOX", (0, 0), (-1, -1), 0.5, HexColor("#d1e2e5")),
+                ("INNERGRID", (0, 0), (-1, -1), 0.35, HexColor("#e0ebed")),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                ("TOPPADDING", (0, 0), (-1, -1), 7),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
+            ]
+        )
+    )
+    story.append(assumptions_table)
+    story.append(Spacer(1, 7))
+
+    story.append(pdf_paragraph("Value ramp and deployment recommendation", section_style))
+
+    ramp_data = [
+        [
+            pdf_paragraph("Month 1", metric_label_style),
+            pdf_paragraph("Month 6", metric_label_style),
+            pdf_paragraph("Month 12", metric_label_style),
+        ],
+        [
+            pdf_paragraph(f"{curr}{cumulative_savings[0]:,.0f}", metric_value_style),
+            pdf_paragraph(f"{curr}{cumulative_savings[5]:,.0f}", metric_value_style),
+            pdf_paragraph(f"{curr}{cumulative_savings[11]:,.0f}", metric_value_style),
+        ],
+        [
+            pdf_paragraph(f"{cumulative_hours[0]:,.0f} reclaimed hours", small_style),
+            pdf_paragraph(f"{cumulative_hours[5]:,.0f} reclaimed hours", small_style),
+            pdf_paragraph(f"{cumulative_hours[11]:,.0f} reclaimed hours", small_style),
+        ],
+    ]
+
+    ramp_table = Table(
+        ramp_data,
+        colWidths=[2.45 * inch, 2.45 * inch, 2.45 * inch],
+    )
+    ramp_table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, -1), HexColor("#f2f7fb")),
+                ("BOX", (0, 0), (-1, -1), 0.5, HexColor("#d2e2eb")),
+                ("INNERGRID", (0, 0), (-1, -1), 0.35, HexColor("#dceaf0")),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 11),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 11),
+                ("TOPPADDING", (0, 0), (-1, 0), 8),
+                ("TOPPADDING", (0, 1), (-1, 1), 3),
+                ("BOTTOMPADDING", (0, 1), (-1, 1), 3),
+                ("BOTTOMPADDING", (0, 2), (-1, 2), 8),
+            ]
+        )
+    )
+    story.append(ramp_table)
+    story.append(Spacer(1, 8))
+
+    recommendation = (
+        f"<b>{escape(deployment['tier'])}: {escape(deployment['name'])}</b> — "
+        f"{escape(deployment['overview'])}"
+    )
+    methodology = (
+        "Model methodology: annual reclaimed hours = active creators × average decks per month × "
+        "manual formatting hours per deck × 65% modeled efficiency gain × 12 months. "
+        "Annual value = annual reclaimed hours × average worker hourly rate."
+    )
+
+    story.extend(
+        [
+            Paragraph(recommendation, body_style),
+            Spacer(1, 6),
+            Paragraph(methodology, small_style),
+            Spacer(1, 7),
+            HRFlowable(
+                width="100%",
+                thickness=0.6,
+                color=HexColor("#d0e0e3"),
+                spaceAfter=5,
+            ),
+            Table(
+                [
+                    [
+                        pdf_paragraph(
+                            "Plus AI Enterprise ROI & Deployment Simulator",
+                            small_style,
+                        ),
+                        pdf_paragraph(
+                            "Prepared from live scenario assumptions",
+                            right_small_style,
+                        ),
+                    ]
+                ],
+                colWidths=[4.2 * inch, 3.15 * inch],
+                style=TableStyle(
+                    [
+                        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                        ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                        ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+                        ("TOPPADDING", (0, 0), (-1, -1), 0),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+                    ]
+                ),
+            ),
+        ]
+    )
+
+    document.build(story)
+    output.seek(0)
+    return output.getvalue()
+
+
+if "show_onboarding" not in st.session_state:
+    st.session_state.show_onboarding = True
+
+for key, value in DEFAULT_SCENARIO.items():
+    if key not in st.session_state:
+        st.session_state[key] = value
+
+if "client_name" not in st.session_state:
+    st.session_state.client_name = ""
+
 st.markdown(
     """
 <style>
@@ -349,51 +741,6 @@ st.markdown(
             "Segoe UI", sans-serif;
     }
 
-    .plus-shell {
-        position: relative;
-        overflow: hidden;
-        background:
-            linear-gradient(135deg, rgba(252, 254, 253, 0.48), rgba(228, 238, 238, 0.52)),
-            rgba(240, 246, 245, 0.52);
-        border: 1px solid rgba(255, 255, 255, 0.68);
-        border-radius: 30px;
-        padding: 0.55rem 1.55rem 1.7rem;
-        box-shadow:
-            0 28px 70px rgba(53, 75, 81, 0.16),
-            inset 0 1px 0 rgba(255, 255, 255, 0.84);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
-    }
-
-    .plus-shell::before {
-        content: "";
-        position: absolute;
-        width: 520px;
-        height: 520px;
-        right: -260px;
-        top: -350px;
-        pointer-events: none;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(104, 181, 205, 0.17) 0%, rgba(104, 181, 205, 0) 68%);
-    }
-
-    .plus-shell::after {
-        content: "";
-        position: absolute;
-        width: 380px;
-        height: 380px;
-        left: -250px;
-        bottom: -280px;
-        pointer-events: none;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(128, 137, 190, 0.12) 0%, rgba(128, 137, 190, 0) 70%);
-    }
-
-    .plus-shell > * {
-        position: relative;
-        z-index: 1;
-    }
-
     .topbar {
         min-height: 58px;
         display: flex;
@@ -401,7 +748,7 @@ st.markdown(
         justify-content: space-between;
         gap: 1rem;
         padding: 0.42rem 0.62rem 0.52rem;
-        margin-bottom: 1.15rem;
+        margin-bottom: 1.0rem;
         border: 1px solid rgba(255, 255, 255, 0.58);
         border-radius: 18px;
         background: rgba(250, 253, 252, 0.30);
@@ -498,6 +845,150 @@ st.markdown(
         background: rgba(255, 255, 255, 0.35);
     }
 
+    .onboarding-card {
+        margin: 0.2rem 0 1rem;
+        padding: 1.05rem 1.15rem;
+        border: 1px solid rgba(255, 255, 255, 0.74);
+        border-radius: 19px;
+        background:
+            linear-gradient(135deg, rgba(231, 246, 249, 0.72), rgba(232, 233, 248, 0.64)),
+            rgba(250, 253, 252, 0.50);
+        box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.88),
+            0 10px 22px rgba(66, 86, 93, 0.07);
+    }
+
+    .onboarding-eyebrow,
+    .eyebrow,
+    .metric-label,
+    .timeline-label,
+    .preset-label {
+        color: #5d7984;
+        font-size: 0.67rem;
+        font-weight: 800;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+    }
+
+    .onboarding-title {
+        margin-top: 0.35rem;
+        color: #1e3741;
+        font-size: 1.02rem;
+        font-weight: 760;
+        letter-spacing: -0.022em;
+    }
+
+    .onboarding-copy {
+        margin-top: 0.32rem;
+        max-width: 850px;
+        color: #58707a;
+        font-size: 0.79rem;
+        line-height: 1.5;
+    }
+
+    .onboarding-steps {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.7rem;
+        margin-top: 0.85rem;
+    }
+
+    .onboarding-step {
+        padding: 0.68rem 0.72rem;
+        border: 1px solid rgba(91, 138, 153, 0.13);
+        border-radius: 13px;
+        background: rgba(255, 255, 255, 0.38);
+        color: #536b75;
+        font-size: 0.73rem;
+        line-height: 1.42;
+    }
+
+    .onboarding-step strong {
+        display: block;
+        margin-bottom: 0.16rem;
+        color: #294b58;
+        font-size: 0.72rem;
+    }
+
+    .scenario-panel {
+        margin: 0.35rem 0 0.25rem;
+        padding: 1rem 1.05rem;
+        border: 1px solid rgba(48, 126, 111, 0.28);
+        border-radius: 19px;
+        background: linear-gradient(135deg, #4a9b89, #3c8797);
+        box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.22),
+            0 10px 22px rgba(54, 126, 112, 0.16);
+    }
+
+    .scenario-panel .preset-label {
+        color: rgba(255, 255, 255, 0.74);
+    }
+
+    .scenario-panel-title {
+        margin: 0;
+        color: #ffffff;
+        font-size: 0.90rem;
+        font-weight: 740;
+        letter-spacing: -0.012em;
+    }
+
+    .scenario-panel-copy {
+        margin: 0.28rem 0 0;
+        color: rgba(255, 255, 255, 0.86);
+        font-size: 0.74rem;
+        line-height: 1.45;
+    }
+
+    .scenario-active {
+        display: inline-flex;
+        align-items: center;
+        margin-top: 0.65rem;
+        padding: 0.33rem 0.58rem;
+        border: 1px solid rgba(48, 126, 111, 0.22);
+        border-radius: 999px;
+        background: rgba(75, 154, 136, 0.13);
+        color: #327663;
+        font-size: 0.69rem;
+        font-weight: 720;
+    }
+
+    div[data-testid="stButton"] > button {
+        min-height: 2.35rem;
+        width: 100%;
+        border-radius: 11px;
+        border: 1px solid rgba(75, 111, 122, 0.18);
+        color: #315866;
+        background: rgba(255, 255, 255, 0.46);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+        font-size: 0.76rem;
+        font-weight: 720;
+    }
+
+    div[data-testid="stButton"] > button:hover {
+        border-color: rgba(63, 157, 188, 0.48);
+        color: #226f8b;
+        background: rgba(235, 248, 250, 0.72);
+    }
+
+    div[data-testid="stDownloadButton"] > button {
+        min-height: 2.58rem;
+        width: 100%;
+        border: 1px solid rgba(48, 126, 111, 0.28);
+        border-radius: 12px;
+        color: #ffffff;
+        background: linear-gradient(135deg, #4a9b89, #3c8797);
+        box-shadow: 0 8px 18px rgba(54, 126, 112, 0.20);
+        font-size: 0.78rem;
+        font-weight: 740;
+    }
+
+    div[data-testid="stDownloadButton"] > button:hover {
+        color: #ffffff;
+        background: linear-gradient(135deg, #3d8979, #347a89);
+        border-color: rgba(48, 126, 111, 0.36);
+    }
+
     .hero-card {
         min-height: 100%;
         position: relative;
@@ -522,16 +1013,6 @@ st.markdown(
         right: -110px;
         top: -115px;
         background: radial-gradient(circle, rgba(116, 198, 226, 0.24), rgba(116, 198, 226, 0) 69%);
-    }
-
-    .eyebrow,
-    .metric-label,
-    .timeline-label {
-        color: #5d7984;
-        font-size: 0.67rem;
-        font-weight: 800;
-        letter-spacing: 0.15em;
-        text-transform: uppercase;
     }
 
     .eyebrow {
@@ -698,7 +1179,8 @@ st.markdown(
     .analytics-card,
     .phase-card,
     .knowledge-card,
-    .linter-summary {
+    .linter-summary,
+    .export-card {
         height: 100%;
         border: 1px solid rgba(255, 255, 255, 0.69);
         border-radius: var(--plus-radius);
@@ -711,6 +1193,24 @@ st.markdown(
             0 11px 25px rgba(66, 86, 93, 0.08);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
+    }
+
+    .export-card {
+        padding: 1.15rem;
+    }
+
+    .export-card-title {
+        color: #263e48;
+        font-size: 0.93rem;
+        font-weight: 750;
+        letter-spacing: -0.015em;
+    }
+
+    .export-card-copy {
+        margin: 0.35rem 0 0.85rem;
+        color: #617782;
+        font-size: 0.75rem;
+        line-height: 1.48;
     }
 
     .input-group-title {
@@ -1226,11 +1726,6 @@ st.markdown(
             padding: 0.6rem 1rem 2.5rem;
         }
 
-        .plus-shell {
-            padding: 0.5rem 1rem 1.2rem;
-            border-radius: 22px;
-        }
-
         .topbar {
             align-items: flex-start;
             flex-direction: column;
@@ -1243,6 +1738,10 @@ st.markdown(
         .hero-card,
         .value-card {
             min-height: auto;
+        }
+
+        .onboarding-steps {
+            grid-template-columns: 1fr;
         }
 
         .phase-track-line {
@@ -1309,6 +1808,99 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+if st.session_state.show_onboarding:
+    guide_column, guide_action_column = st.columns([5, 1])
+    with guide_column:
+        st.markdown(
+            """
+<div class="onboarding-card">
+    <div class="onboarding-eyebrow">START HERE</div>
+    <div class="onboarding-title">Turn a presentation workflow into an executive value conversation.</div>
+    <div class="onboarding-copy">Start from a rollout preset or enter your own assumptions. The model updates immediately, then the ROI, deployment, and linter workspaces explain the operational case behind the numbers.</div>
+    <div class="onboarding-steps">
+        <div class="onboarding-step"><strong>01 · Set the context</strong>Add a client name if relevant, then select a rollout starting point.</div>
+        <div class="onboarding-step"><strong>02 · Tune the model</strong>Adjust creator volume, deck activity, formatting time, and labour rate.</div>
+        <div class="onboarding-step"><strong>03 · Share the case</strong>Explore the ROI and deployment plan, then export a one-page PDF summary.</div>
+    </div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+    with guide_action_column:
+        st.write("")
+        st.write("")
+        if st.button("Hide guide", key="hide_onboarding"):
+            st.session_state.show_onboarding = False
+            st.rerun()
+else:
+    if st.button("Show quick guide", key="show_onboarding_button"):
+        st.session_state.show_onboarding = True
+        st.rerun()
+
+st.markdown(
+    """
+<div class="scenario-panel">
+    <div class="preset-label">SCENARIO SETUP</div>
+    <div class="scenario-panel-title">Personalize the model, then start from the rollout posture that matches the conversation.</div>
+    <div class="scenario-panel-copy">Client/company name is optional. Presets change only the assumptions; every value can still be adjusted manually.</div>
+</div>
+""",
+    unsafe_allow_html=True,
+)
+
+scenario_name_col, scenario_context_col = st.columns([1.45, 2.55], gap="medium")
+
+with scenario_name_col:
+    client_name = st.text_input(
+        "Client / company name (optional)",
+        key="client_name",
+        placeholder="e.g., Acme Corporation",
+    )
+
+current_values_before_preset = {
+    "team_size": st.session_state.team_size,
+    "decks_per_month": st.session_state.decks_per_month,
+    "hours_per_deck": st.session_state.hours_per_deck,
+    "hourly_rate": st.session_state.hourly_rate,
+    "currency": st.session_state.currency,
+    "brand_tier": st.session_state.brand_tier,
+}
+scenario_name_before_preset = get_scenario_name(current_values_before_preset)
+
+with scenario_context_col:
+    st.markdown(
+        f'<div class="scenario-active">Active scenario · {scenario_name_before_preset}</div>',
+        unsafe_allow_html=True,
+    )
+
+preset_col_1, preset_col_2, preset_col_3 = st.columns(3, gap="small")
+
+with preset_col_1:
+    if st.button("Pilot", key="preset_pilot"):
+        apply_preset("Pilot")
+        st.rerun()
+
+with preset_col_2:
+    if st.button("Department rollout", key="preset_department"):
+        apply_preset("Department rollout")
+        st.rerun()
+
+with preset_col_3:
+    if st.button("Enterprise rollout", key="preset_enterprise"):
+        apply_preset("Enterprise rollout")
+        st.rerun()
+
+preset_description = (
+    PRESETS[scenario_name_before_preset]["description"]
+    if scenario_name_before_preset in PRESETS
+    else "A custom model built from your current organization, economic, and architecture assumptions."
+)
+
+st.markdown(
+    f'<div class="scenario-panel-copy" style="margin:0.45rem 0 0.95rem;">{preset_description}</div>',
+    unsafe_allow_html=True,
+)
+
 hero_placeholder = st.empty()
 
 st.markdown(
@@ -1327,7 +1919,6 @@ st.markdown(
 config_col_1, config_col_2, config_col_3 = st.columns([1, 1, 1.08], gap="medium")
 
 with config_col_1:
-    st.markdown('<div class="glass-panel">', unsafe_allow_html=True)
     st.markdown(
         """
 <div class="input-group-title"><span class="group-dot"></span>Organization profile</div>
@@ -1339,23 +1930,21 @@ with config_col_1:
         "Active slide creators",
         min_value=1,
         max_value=10000,
-        value=50,
         step=1,
+        key="team_size",
         help="Total knowledge workers, consultants, or sales reps actively creating or modifying presentations.",
     )
     final_decks_per_month = st.number_input(
         "Average decks per user / month",
         min_value=0.5,
         max_value=100.0,
-        value=6.0,
         step=0.5,
         format="%.1f",
+        key="decks_per_month",
         help="Estimated volume of presentations created, edited, or updated per employee every month.",
     )
-    st.markdown("</div>", unsafe_allow_html=True)
 
 with config_col_2:
-    st.markdown('<div class="glass-panel">', unsafe_allow_html=True)
     st.markdown(
         """
 <div class="input-group-title"><span class="group-dot teal"></span>Economic assumptions</div>
@@ -1366,7 +1955,7 @@ with config_col_2:
     selected_currency_full = st.selectbox(
         "Currency",
         options=CURRENCY_OPTIONS,
-        index=0,
+        key="currency",
         help="Select the operational currency to standardize financial return modeling across global teams.",
     )
     curr = selected_currency_full.split(" ")[0]
@@ -1374,15 +1963,13 @@ with config_col_2:
         f"Average worker hourly rate ({curr})",
         min_value=1.00,
         max_value=2500.00,
-        value=45.00,
         step=0.25,
         format="%.2f",
+        key="hourly_rate",
         help="Fully loaded hourly cost including salary and overhead of professionals creating presentations.",
     )
-    st.markdown("</div>", unsafe_allow_html=True)
 
 with config_col_3:
-    st.markdown('<div class="glass-panel">', unsafe_allow_html=True)
     st.markdown(
         """
 <div class="input-group-title"><span class="group-dot violet"></span>Deployment architecture</div>
@@ -1394,17 +1981,27 @@ with config_col_3:
         "Manual formatting hours per deck",
         min_value=0.1,
         max_value=40.0,
-        value=3.5,
         step=0.25,
         format="%.2f",
+        key="hours_per_deck",
         help="Average time a professional spends aligning shapes, fixing margins, and manually styling slides.",
     )
     brand_tier = st.selectbox(
         "Brand and template architecture tier",
         options=BRAND_TIER_OPTIONS,
+        key="brand_tier",
         help="Defines organizational design complexity from single template schemas to multi-unit corporate brands.",
     )
-    st.markdown("</div>", unsafe_allow_html=True)
+
+current_values = {
+    "team_size": final_team_size,
+    "decks_per_month": final_decks_per_month,
+    "hours_per_deck": final_hours_per_deck,
+    "hourly_rate": hourly_rate,
+    "currency": selected_currency_full,
+    "brand_tier": brand_tier,
+}
+scenario_name = get_scenario_name(current_values)
 
 total_monthly_decks = final_team_size * final_decks_per_month
 hours_saved_per_deck = final_hours_per_deck * 0.65
@@ -1423,7 +2020,7 @@ with hero_placeholder.container():
 
     with hero_left:
         st.markdown(
-            """
+            f"""
 <div class="hero-card">
     <div class="eyebrow">PLUS AI / ENTERPRISE STRATEGY CONSOLE</div>
     <h1 class="hero-heading">Turn presentation work into measurable enterprise capacity.</h1>
@@ -1432,9 +2029,9 @@ with hero_placeholder.container():
         teams replace manual slide formatting with governed AI workflows.
     </p>
     <div class="hero-tags">
+        <span class="tag">{scenario_name}</span>
         <span class="tag">ROI scenario modeling</span>
         <span class="tag">Deployment planning</span>
-        <span class="tag">Brand governance</span>
     </div>
 </div>
 """,
@@ -1527,6 +2124,62 @@ st.markdown(
 """,
     unsafe_allow_html=True,
 )
+
+st.markdown(
+    """
+<div class="section-heading">
+    <div>
+        <h2>Executive summary export</h2>
+        <p>Download a one-page PDF summary of the current scenario for stakeholder review.</p>
+    </div>
+    <div class="section-kicker">PDF ready</div>
+</div>
+""",
+    unsafe_allow_html=True,
+)
+
+export_left, export_right = st.columns([1.55, 1], gap="medium")
+
+with export_left:
+    export_client_label = client_name.strip() or "Current modeled scenario"
+    st.markdown(
+        f"""
+<div class="export-card">
+    <div class="export-card-title">Prepared for {escape(export_client_label)}</div>
+    <div class="export-card-copy">The PDF includes current assumptions, executive outcomes, value-ramp milestones, deployment posture, and the calculation method. It reflects the model exactly as it is currently configured.</div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+with export_right:
+    safe_name = "".join(
+        character.lower() if character.isalnum() else "_"
+        for character in (client_name.strip() or "plus_ai")
+    ).strip("_")
+    pdf_filename = f"{safe_name or 'plus_ai'}_executive_value_summary.pdf"
+    executive_pdf = build_executive_summary_pdf(
+        client_name=client_name,
+        scenario_name=scenario_name,
+        curr=curr,
+        team_size=final_team_size,
+        decks_per_month=final_decks_per_month,
+        hours_per_deck=final_hours_per_deck,
+        hourly_rate=hourly_rate,
+        total_monthly_decks=total_monthly_decks,
+        annual_hours_saved=annual_hours_saved,
+        annual_cost_savings=annual_cost_savings,
+        cumulative_hours=cumulative_hours,
+        cumulative_savings=cumulative_savings,
+        deployment=deployment,
+    )
+    st.download_button(
+        label="Download executive PDF",
+        data=executive_pdf,
+        file_name=pdf_filename,
+        mime="application/pdf",
+        key="download_executive_pdf",
+    )
 
 tab1, tab2, tab3, tab4 = st.tabs(
     [
@@ -1917,3 +2570,16 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+st.markdown(
+    """
+<style>
+    /* Remove empty visual capsules rendered above configuration card content. */
+    div[data-testid="stVerticalBlockBorderWrapper"]:has(
+        div[data-testid="stMarkdownContainer"]:empty
+    ) {
+        display: none !important;
+    }
+</style>
+""",
+    unsafe_allow_html=True,
+)
